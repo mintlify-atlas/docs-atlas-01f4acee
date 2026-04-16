@@ -1,0 +1,194 @@
+---
+title: "Design graph styles visually with the Style Designer"
+description: "Use the Style Designer worksheet to visually configure node, edge, and cluster styles, then save them for reuse across the data worksheet."
+---
+
+The **Style Designer** worksheet lets you compose Graphviz style specifications visually without writing DOT attribute strings by hand. You choose element type, make selections from ribbon drop-downs, and watch a live preview update instantly. When you are satisfied, you save the style to the `styles` worksheet where it becomes available to every row in the `data` worksheet.
+
+## Opening the Style Designer
+
+Click the **Style Designer** button on the **Launchpad** ribbon tab, or navigate directly to the `style designer` worksheet tab at the bottom of the workbook.
+
+## Worksheet overview
+
+The worksheet contains these key areas:
+
+- **Ribbon** — drop-down galleries and buttons for every visible Graphviz attribute. Controls change dynamically based on the selected element type.
+- **Label fields** — text boxes where you can type sample text to preview how labels will appear on the rendered element.
+- **Style Name** — the name that identifies this style on the `styles` worksheet. Type a new name to create a style, or enter an existing name to modify it.
+- **Format String** — the cell that accumulates all the Graphviz attributes you select. You can also edit this cell directly for fine-grained control.
+- **Preview image** — a live rendering produced by Graphviz showing exactly how the current attribute combination will look.
+- **Save button** — writes the current **Format String** under the current **Style Name** to the `styles` worksheet.
+
+<Warning>
+Any change you make in the ribbon will rebuild the **Format String** from scratch, overwriting any edits you typed directly into it. Finish ribbon selections before hand-editing the Format String cell.
+</Warning>
+
+## Choosing an element type
+
+The **Element** radio buttons on the left side of the ribbon control which design mode is active. The ribbon attributes update automatically when you switch modes.
+
+<Tabs>
+  <Tab title="Node">
+    Select **Node** in the **Element** group to access node-specific attributes: shape, fill color, gradient, border style, font, dimensions, and image embedding.
+
+    ### Shape
+
+    Click the **Shape** drop-down to open a gallery showing every Graphviz node shape with a sample image. Selecting a shape adds the `shape=` attribute to the **Format String** and refreshes the preview.
+
+    Selecting `polygon` expands the ribbon to reveal additional polygon controls:
+
+    | Attribute       | Effect                                                                 |
+    |-----------------|------------------------------------------------------------------------|
+    | `skew`          | Positive values lean the top right; negative values lean it left.      |
+    | `distortion`    | Positive values make the top larger; negative make the bottom larger.  |
+    | `sides`         | Number of polygon sides (default 4). Values below 4 produce an ellipse or circle. |
+    | `regular`       | Forces vertices onto a circle centered on the node.                   |
+    | `orientation`   | Rotates the polygon clockwise by the specified number of degrees.      |
+
+    ### Fill and gradient
+
+    Click **Fill Color** to choose a solid interior color from a drop-down gallery. Once you choose a fill color, a **Gradient Fill Color** option appears. Selecting a second color creates a gradient transition. Three additional controls appear:
+
+    - **Type** — `filled` (linear) or `radial`
+    - **Angle** — direction of the gradient in degrees (0 = left to right, 90 = top to bottom)
+    - **Weight** — how much of the shape the first color occupies (0.0–1.0)
+
+    For example, a gradient with 20% weight is encoded as:
+
+    ```
+    style=filled fillcolor="DodgerBlue;0.20:HotPink"
+    ```
+
+    ### Borders
+
+    Up to three **Border Style** drop-downs let you stack styles such as `rounded`, `dashed`, and `bold`. Styles are additive: choosing `rounded` then `dashed` produces a rounded, dashed border. Use **Border Color** to set the pen color and **Pen Width** to control line thickness (default `1.0`). Use **Peripheries** to draw multiple concentric borders around a node (default `1`).
+
+    ### Dimensions
+
+    Set **Height** and **Width** explicitly to control node size. By default Graphviz sizes nodes to fit their label text. Use **Fixed Size** to lock dimensions:
+
+    | Value           | Behavior                                                              |
+    |-----------------|-----------------------------------------------------------------------|
+    | `false`         | Node expands to fit the label (default).                              |
+    | `true`          | Node is locked; long labels are truncated.                            |
+    | `shape`         | Height is locked; label may stretch horizontally.                     |
+
+    Dimensions are in inches by default. Enable **Metric Units** on the **Launchpad** ribbon to work in millimeters.
+
+    ### Images
+
+    To embed an image inside a node, click **Choose Image** in the far-right section of the ribbon and navigate to the image file. Once selected, use the **Scale** and **Position** controls to fit and place the image within the shape.
+
+    Before embedding images, define the image directory on the `settings` worksheet under **Image Path**.
+
+    ### Example node format string
+
+    A node styled as a fixed-size filled square with Arial font:
+
+    ```
+    shape=square height=0.5 width=0.5 fixedsize=True style=filled penwidth=1 fontname=Arial fontsize=8
+    ```
+  </Tab>
+
+  <Tab title="Edge">
+    Select **Edge** in the **Element** group to access edge-specific attributes. Click **Reset** first to clear any leftover node attributes before building a fresh edge style.
+
+    ### Edge style and weight
+
+    Use the **Style** drop-down to pick a line pattern: `solid`, `dashed`, `dotted`, `bold`, or `tapered`. **Pen Width** sets the line thickness. **Weight** influences the layout engine — higher values encourage Graphviz to keep connected nodes closer together and produce straighter edges.
+
+    ### Edge direction and arrowheads
+
+    The **Direction** group controls where arrowheads appear:
+
+    | Value     | Effect                                    |
+    |-----------|-------------------------------------------|
+    | `forward` | Arrowhead at the target end (default).    |
+    | `back`    | Arrowtail at the source end.              |
+    | `both`    | Arrowheads at both ends.                  |
+    | `none`    | No arrowheads — plain line.               |
+
+    You can stack up to three arrowhead glyphs to create compound endpoints (for example, `arrowhead="normalodot"`). The same stacking applies to arrowtails when direction is `back` or `both`. **Arrow Size** scales the arrowhead via a multiplier (default `1.0`).
+
+    ### Edge colors
+
+    Specify one, two, or three colors for the edge. Multiple colors render as parallel lines:
+
+    ```
+    color="Blue:Red:DarkGreen"
+    ```
+
+    You can select colors from any Graphviz color scheme or enter a custom RGB value via the **Color Dialog**.
+
+    ### Edge labels
+
+    Use the **Label**, **External Label**, **Tail Label**, and **Head Label** fields to add text to different parts of the edge. Check the checkbox next to a label field to include it in the saved style definition. Two additional toggle attributes are available for edge labels:
+
+    - **Decorate** — draws a connecting line from the edge to its label.
+    - **Float** — allows the label to float freely rather than anchoring to a fixed position.
+
+    ### Head and tail port options
+
+    **Head Port** and **Tail Port** specify the compass point on a node where the edge attaches: `n`, `ne`, `e`, `se`, `s`, `sw`, `w`, `nw`, `c`, or `_`.
+
+    **Label Angle** and **Label Distance** control the placement of head and tail labels. `labelangle` rotates the label around the attachment point; positive values move left, negative values move right. `labeldistance` scales the default offset (positive values push further out).
+
+    **Head Clip** and **Tail Clip** control whether the edge is clipped at the node boundary (`true`, the default) or runs to the node center (`false`).
+
+    ### Example edge format string
+
+    A dark-green edge with Arial font and smaller arrowhead:
+
+    ```
+    fontname=Arial fontsize=10 color=darkgreen fontcolor=darkgreen arrowsize=0.5
+    ```
+  </Tab>
+
+  <Tab title="Cluster">
+    Select **Cluster** in the **Element** group to create styles for subgraph cluster boundaries.
+
+    Cluster styles support:
+
+    - **Fill Color** and **Gradient** — same controls as nodes.
+    - **Border Style**, **Border Color**, and **Pen Width** — same controls as nodes.
+    - **Font**, **Font Size**, **Font Color** — control the cluster label appearance.
+    - **Label Location** — align the cluster label to the top, center, bottom, left, middle, or right of the cluster boundary.
+
+    Save cluster styles the same way as node and edge styles. Reference the saved style name in the `Style Name` column of the brace rows in the `data` worksheet.
+  </Tab>
+</Tabs>
+
+## Color schemes
+
+The **Color Scheme** button opens a gallery of all Graphviz color scheme families. Selecting a scheme refreshes every color drop-down to show that scheme's palette.
+
+The three major families are:
+
+- **X11** — Graphviz's default. The largest palette with 656 named colors (for example, `HotPink1`, `LightSkyBlue`).
+- **SVG** — a smaller web-friendly set of named colors matching the SVG specification.
+- **Brewer** — perceptually balanced sequential, diverging, and qualitative palettes designed for data visualization.
+
+When you select a Brewer scheme such as `bugn9`, the attribute `colorscheme=bugn9` is added to the **Format String** and color values are referenced by index (for example, `color="7"` means `/bugn9/7`).
+
+To specify an exact color not available in any scheme, click the small color-picker icon next to any color drop-down to open the native OS **Color Dialog**. The selected RGB value (for example, `#FE0079`) is written directly to the **Format String**.
+
+## Label fonts
+
+The **Font Name** drop-down presents a gallery of fonts compatible with Graphviz on your operating system. On Windows, the list is filtered from installed fonts; on macOS, a curated static list is provided. When you open the gallery for the first time, Graphviz generates an `Aa Bb Cc` preview for each font. Subsequent opens use cached previews.
+
+Choosing a font adds `fontname="Comic Sans MS"` (or whichever font you pick) to the **Format String**.
+
+<Info>
+Font size values in the drop-down jump from 36 to 48. To use a size in between (for example, 40), edit the **Format String** cell directly and type the value manually.
+</Info>
+
+## Saving a style
+
+Once the **Format String** and **Style Name** cells contain the values you want, click the large **Save** button (or **Save to 'styles'** in the ribbon). The style is written as a row on the `styles` worksheet.
+
+Saved styles appear in the **Style Name** drop-down list in the `data` worksheet. Apply a style to any node or edge row by selecting it from that list.
+
+<Note>
+To modify an existing style, type its name in the **Style Name** cell, make your ribbon changes, and save again. The existing row on the `styles` worksheet is updated in place.
+</Note>

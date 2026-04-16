@@ -1,0 +1,78 @@
+---
+title: "Filtering and focusing graph data with named views"
+description: "Views let you display a focused subset of your graph by enabling or disabling styles per view column in the styles worksheet — no duplicate data required."
+---
+
+As your data grows, it often becomes useful to focus on specific portions of a graph rather than displaying everything at once. The Relationship Visualizer supports this through **views**: named columns on the `styles` worksheet where each style is marked `Yes` or `No` to control whether it participates in the graph when that view is active.
+
+## Views vs. layers
+
+Views are not the same as layers in tools like Microsoft Visio.
+
+- **Layers** (Visio) simply show or hide shapes in place — nothing moves.
+- **Views** (Relationship Visualizer) redraw the graph using only the enabled styles. Because Graphviz optimizes layout based on visible connections, node positions often change when you switch views.
+
+This means switching views can produce meaningfully different layouts, not just a filtered version of the same diagram.
+
+## How view columns work
+
+Every view is a column in the `styles` worksheet. Each cell in that column contains either `Yes` (include this style) or `No` (exclude this style). When the Relationship Visualizer generates a graph, it reads the active view column and omits any row whose switch is set to `No`.
+
+The worksheet ships with three default view columns:
+
+| View column     | What it does                                                                  |
+|-----------------|-------------------------------------------------------------------------------|
+| **All Styles**  | All style switches set to `Yes` — every style is included in the graph.      |
+| **No Clusters** | Switches set to `No` for any style whose `Style Type` is `subgraph-open` or `subgraph-close`. Renders the graph without cluster groupings. |
+| **No Edges**    | Switches set to `No` for any style whose `Style Type` is `edge`. Renders only nodes, with no connecting edges. |
+
+## Selecting the active view
+
+The active view is controlled by the **Graph View** dropdown on the **Graphviz** ribbon tab. Changing the selection immediately makes the corresponding column the active view. The dropdown list updates automatically whenever you add or rename a view column in the `styles` worksheet.
+
+## Creating a custom view
+
+<Steps>
+  <Step title="Switch to the styles worksheet">
+    Open the `styles` worksheet from the **Launchpad** ribbon tab.
+  </Step>
+  <Step title="Insert a new view column">
+    Copy the existing **All Styles** column (column E) and insert the copy as a new column directly to the right. This gives you a starting point with all styles enabled.
+  </Step>
+  <Step title="Name the view">
+    Change the heading of the new column to your view name — for example, `Bakerloo`.
+  </Step>
+  <Step title="Set the switches">
+    For each style row, change the switch in the new column to `No` for any style you want to exclude from this view. Leave it as `Yes` for styles that should remain active.
+  </Step>
+  <Step title="Select the view">
+    Switch to the `data` worksheet, open the **Graph View** dropdown on the **Graphviz** ribbon tab, and select your new view name.
+  </Step>
+  <Step title="Refresh the graph">
+    Press the **Refresh** button to render the graph using only the styles enabled in your new view column.
+  </Step>
+</Steps>
+
+## Handling isolated nodes
+
+When you filter out edge styles, nodes that had connections may become isolated — they still appear in the graph but have no edges. This happens because the node styles are still set to `Yes` even though the edges connecting them are disabled.
+
+To clean up isolated nodes, remove the check mark from the **Include stand-alone nodes** switch in the **Nodes** group on the **Graphviz** ribbon tab. With this option off, the Relationship Visualizer only draws nodes that have at least one active edge connection.
+
+<Note>
+Removing stand-alone nodes can also cause entire clusters to disappear. Graphviz does not render a cluster that contains no visible nodes, so filtering nodes out may also remove their containing clusters.
+</Note>
+
+## Adding more views
+
+Repeat the same process — copy the **All Styles** column, rename it, and adjust the switches — for each additional view you want to create. As you add columns, the **Graph View** dropdown expands automatically to list every view by name.
+
+With multiple view columns in place, the `styles` worksheet shows a diagonal pattern of `Yes` values across the columns, with each view enabling a distinct subset of styles.
+
+## Publishing all views at once
+
+Once you have defined your views, you can generate one output file per view with a single command. Click the **Publish all views** button on the **Graphviz** ribbon tab to produce a complete set of diagrams — one per view — without switching between them manually.
+
+<Tip>
+Views work especially well for large datasets such as network maps or transportation diagrams, where you want to explore subsets (individual lines, teams, or departments) from a single shared data source.
+</Tip>

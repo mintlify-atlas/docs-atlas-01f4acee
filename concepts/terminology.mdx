@@ -1,0 +1,146 @@
+---
+title: "Graphviz terminology: graphs, nodes, edges, and more"
+description: "A reference of key Graphviz terms used throughout the Relationship Visualizer — graphs, nodes, edges, labels, ports, clusters, layout engines, and splines."
+---
+
+Understanding a handful of core Graphviz concepts will help you get more out of the Relationship Visualizer. This page introduces the vocabulary used throughout the rest of the documentation, from the basic building blocks of a graph to the layout engines and edge-routing styles you can choose from.
+
+## Graph
+
+A **graph** is a collection of nodes and the edges that connect them. Everything you create in the Relationship Visualizer is a graph.
+
+## Node
+
+A graph is composed of **nodes**, which represent the objects or entities in the visualization. In the `data` worksheet, each value in the **Item** column becomes a node.
+
+## Edge
+
+**Edges** are the connections between nodes. They represent relationships or interactions between entities. An edge is created whenever you fill in both the **Item** and **Related Item** columns on the same row.
+
+## Directed vs. undirected graphs
+
+The Relationship Visualizer produces directed graphs by default.
+
+- An **undirected graph** has edges with no inherent direction — the relationship between two connected nodes is mutual.
+- A **directed graph** (also called a **digraph**) uses edges with explicit direction, indicating a one-way relationship from one node to another. Arrows mark the direction of each edge.
+
+## Labels
+
+Labels attach descriptive text to nodes and edges.
+
+- **Node label** — text placed inside (or outside) the node shape, set via the **Label** column.
+- **Edge label** — text placed along the edge itself, also set via the **Label** column.
+- **External label** — text placed outside the node or away from the edge spline, set via the **External Label** column (uses the Graphviz `xlabel` attribute).
+- **Tail label** — text placed near the origin end of an edge, set via the **Tail Label** column (uses `taillabel`).
+- **Head label** — text placed near the destination end of an edge, set via the **Head Label** column (uses `headlabel`).
+
+<Info>
+If you leave both **Label** and **External Label** blank for a node, the Relationship Visualizer uses the **Item** value as the node's label by default.
+</Info>
+
+## Ports
+
+A **port** specifies exactly where an edge attaches to a node. You add a port to an **Item** or **Related Item** value using a colon followed by a compass-point abbreviation — for example, `a:e` attaches the edge to the east side of node `a`.
+
+| Port | Direction   |
+|:----:|:-----------:|
+| `c`  | Center      |
+| `n`  | North       |
+| `s`  | South       |
+| `e`  | East        |
+| `w`  | West        |
+| `ne` | North-East  |
+| `nw` | North-West  |
+| `se` | South-East  |
+| `sw` | South-West  |
+
+Controlling ports helps reduce edge crossings and emphasize directional flow. Custom ports can also be defined when using HTML-like labels or the `record` node shape.
+
+## Clusters
+
+A **cluster** is a special subgraph that groups related nodes inside a distinct rectangular bounding box. You create a cluster in the `data` worksheet by placing an opening brace `{` in the **Item** column (with an optional label) above the rows you want to group, and a closing brace `}` below them.
+
+<Warning>
+Graphviz will not render the graph if the number of opening braces does not match the number of closing braces.
+</Warning>
+
+Clusters are best supported by the **dot** layout engine. The **fdp**, **neato**, and **osage** engines may render cluster boundaries in some configurations, but results vary. Other engines may not draw visible cluster borders even when the DOT source is valid.
+
+## Layout engines
+
+Graphviz provides eight layout engines. Each uses a different algorithm to position nodes and route edges. Choosing the right engine is often a matter of experimenting to find which presentation best communicates your data.
+
+<AccordionGroup>
+  <Accordion title="dot — hierarchical / layered">
+    Creates hierarchical or layered drawings of directed graphs. Edges flow top-to-bottom or left-to-right, making it the default choice for workflows, org charts, and dependency trees.
+
+    - **Best for:** Directed graphs, workflows, dependency trees
+    - **Avoid for:** Dense undirected networks
+  </Accordion>
+
+  <Accordion title="neato — spring model (energy minimization)">
+    A classic spring-model layout engine. Neato minimizes a global energy function to produce balanced, natural layouts similar to multidimensional scaling. Works best for small to medium undirected graphs (roughly up to 100 nodes).
+
+    - **Best for:** Small–medium undirected graphs
+    - **Avoid for:** Very large graphs
+  </Accordion>
+
+  <Accordion title="fdp — spring model (force reduction)">
+    A force-directed placement algorithm similar to neato, but it reduces forces directly rather than minimizing an energy function. Useful for undirected graphs where an organic layout is desired.
+
+    - **Best for:** Undirected graphs needing organic spacing
+    - **Avoid for:** Very large graphs (use sfdp instead)
+  </Accordion>
+
+  <Accordion title="sfdp — multiscale force-directed">
+    A multiscale version of fdp, optimized for very large graphs. Uses hierarchical approximations to compute force-directed layouts efficiently at scale.
+
+    - **Best for:** Very large undirected graphs (thousands of nodes)
+    - **Avoid for:** Small graphs (overkill)
+  </Accordion>
+
+  <Accordion title="circo — circular / cyclic">
+    Produces circular layouts. Designed for graphs with multiple cyclic structures — useful for telecommunications diagrams or any network with repeating loops.
+
+    - **Best for:** Cycles, rings, telecommunications networks
+    - **Avoid for:** Hierarchies or tree structures
+  </Accordion>
+
+  <Accordion title="twopi — radial / concentric circles">
+    Produces radial layouts. Nodes are placed on concentric circles based on their distance from a chosen root node, making it ideal for tree-like structures or distance-based visualizations.
+
+    - **Best for:** Rooted trees, distance-based layouts
+    - **Avoid for:** Dense or cyclic graphs
+  </Accordion>
+
+  <Accordion title="osage — clustered rectangular packing">
+    Designed for clustered or multi-level undirected graphs. Osage arranges clusters into rectangular regions and then packs those regions together. Each cluster is laid out independently inside its own rectangle.
+
+    - **Best for:** Multi-level clustered graphs
+    - **Avoid for:** Flat, non-clustered graphs
+  </Accordion>
+
+  <Accordion title="patchwork — squarified treemap">
+    Draws the graph as a squarified treemap, using cluster structure to determine the hierarchy. Ideal for visualizing nested groupings or proportional areas.
+
+    - **Best for:** Hierarchical clusters, proportional areas
+    - **Avoid for:** Non-clustered graphs
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+Start with **dot** for anything directional. Try **neato** or **fdp** for undirected graphs when you want a natural look. Switch to **sfdp** if the graph becomes too large or slow to render.
+</Tip>
+
+## Splines
+
+The **splines** setting controls how edges are routed and drawn between nodes. The table below summarizes the available options.
+
+| Value      | Edge routing behavior                                                                                 |
+|------------|-------------------------------------------------------------------------------------------------------|
+| `line`     | Single straight lines between nodes — the simplest, most geometric style.                            |
+| `spline`   | A mix of straight segments and free-flowing curves — the most flexible style, reduces visual clutter. |
+| `ortho`    | Horizontal and vertical segments with 90-degree bends — ideal for clean, rectilinear diagrams.       |
+| `polyline` | Straight segments with angular bends — sharp turns without enforcing right angles.                    |
+| `curved`   | Smooth, continuous curves — flowing and organic connections.                                          |
+| `none`     | Edges are not drawn, but the underlying relationships still influence node placement.                 |

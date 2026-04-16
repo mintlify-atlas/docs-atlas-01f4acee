@@ -1,0 +1,245 @@
+---
+title: "SQL data import: query Excel workbooks for graph data"
+description: "Use SQL SELECT queries to pull data from Excel workbooks into Relationship Visualizer and generate Graphviz graphs automatically. Windows only."
+---
+
+The Relationship Visualizer includes an optional SQL feature that lets you write SQL `SELECT` queries against Excel worksheets and pipe the results directly into the **data** worksheet for graphing. Instead of entering rows by hand, you describe what data you want and the tool fetches, transforms, and loads it automatically. This is especially valuable when your source data lives in another workbook or when a single graph requires hundreds of rows assembled from multiple worksheets.
+
+<Warning>
+  The SQL feature is **Windows only**. It relies on ActiveX Data Objects (ADO), which are not available on macOS. If you use macOS, you can still build graphs using the manual data entry options on the **data** worksheet.
+</Warning>
+
+## What the `sql` worksheet does
+
+The **sql** worksheet is where you write and run SQL queries. Each row holds one query. When you click **Run SQL Commands**, the tool executes every query in sequence, writes the results to the **data** worksheet, and records a status value for each row. The **data** worksheet is then ready for graphing — press **Refresh** (or **Visualize**) and Graphviz renders the result.
+
+Excel acts as a flat-file relational database through the ACE engine. Queries use a dedicated Excel SQL dialect rather than standard ANSI SQL, but the core `SELECT … FROM … WHERE` syntax will be familiar to anyone who has worked with SQL before.
+
+## When to use SQL versus manual data entry
+
+Use SQL when:
+
+- Your source data already lives in an Excel workbook and you do not want to copy it by hand.
+- You need to combine or filter data from multiple worksheets.
+- Your graph has many rows that would be tedious to enter manually — a single SQL statement can produce hundreds of rows.
+- You want to regenerate the graph for a new dataset by swapping one file for another without rewriting anything.
+
+Use manual data entry when:
+
+- Your graph is small and the data does not change often.
+- You are on macOS, where SQL is not available.
+- You want full control over every row without writing queries.
+
+## The four columns of the `sql` worksheet
+
+The **sql** worksheet has four columns (A through D):
+
+| Column | Name | Purpose |
+|--------|------|---------|
+| A | **Indicator** | Row-level control flag |
+| B | **SQL SELECT Statement** | The query to run |
+| C | **Excel data file** | Path to the source workbook (optional) |
+| D | **Status** | Result of the last run |
+
+### Indicator (column A)
+
+- `#` — treats the row as a comment. The text turns gray and the row is skipped.
+- `!` — set automatically when an error is detected on this row. The status cell turns red and shows an error message.
+
+### SQL SELECT Statement (column B)
+
+This is where you write the query. For example, to create country nodes:
+
+```sql
+SELECT [Country Code] AS [Item],
+       [Country Name] AS [Label]
+FROM   [Countries$]
+```
+
+<Note>
+  Worksheet names must be enclosed in square brackets and must end with a `$` — for example, `[Countries$]`. Column names that contain spaces or special characters also require square brackets, such as `[Country Code]`. Never use double quotes for identifiers; double quotes denote string literals, not column references.
+</Note>
+
+### Excel data file (column C)
+
+This column specifies which workbook to query:
+
+- **Blank** — the tool uses the workbook set in the **Data File** group on the ribbon, or falls back to the Relationship Visualizer workbook itself.
+- **Relative filename** (file name only) — the file is looked up in the same directory as the Relationship Visualizer workbook.
+- **Fully qualified path** — the exact path is used as given.
+
+### Status (column D)
+
+After a run, each row shows one of three values:
+
+- **SUCCESS** — the query executed and wrote results to the **data** worksheet.
+- **FAILURE** — the query failed. The error message is appended to the status cell.
+- **SKIPPED** — the row was not processed because column A contains `#`, or a filter is active and this row did not match.
+
+## Basic workflow
+
+<Steps>
+  <Step title="Open the sql worksheet">
+    From the **Launchpad** ribbon tab, click **SQL**. The **sql** worksheet becomes active and the **SQL** ribbon tab appears.
+  </Step>
+  <Step title="Write your SQL query">
+    Click a cell in column B and enter a `SELECT` statement. Use square brackets around worksheet names (with a trailing `$`) and around column names. Alias each column to a name that matches a column on the **data** worksheet — for example, `AS [Item]`, `AS [Label]`, or `AS [Style Name]`.
+
+    ```sql
+    SELECT [Country Code] AS [Item],
+           [Country Name] AS [Label],
+           'Country'      AS [Style Name]
+    FROM   [Countries$]
+    ```
+  </Step>
+  <Step title="Specify the data file (if needed)">
+    If your data lives in a different workbook, enter the filename or full path in column C of the same row. Leave it blank to query the Relationship Visualizer workbook itself.
+  </Step>
+  <Step title="Run the queries">
+    Click **Run SQL Commands** in the **SQL** group on the ribbon. Each query runs top to bottom. Results are written to the **data** worksheet and status values appear in column D.
+  </Step>
+  <Step title="Visualize the graph">
+    Click **Visualize** (or **Refresh**) — either from the **SQL** ribbon tab's **Graphviz** group, or from the main **Graphviz** tab — to render the diagram.
+  </Step>
+</Steps>
+
+## Mapping results to the `data` worksheet
+
+After a query runs, the Relationship Visualizer reads the column names (or aliases) in the result set and places values into the matching columns on the **data** worksheet. Only recognized column names are used; all others are ignored. The default English column names are:
+
+- `[Comment]`
+- `[Item]`
+- `[Label]`
+- `[External Label]`
+- `[Tail Label]`
+- `[Head Label]`
+- `[Related Item]`
+- `[Style Name]`
+- `[Attributes]`
+
+Use `AS` to rename source columns to these names. See [Writing SQL queries for graph data](/sql/queries) for detailed examples.
+
+## String constants for style names
+
+You can pass a string literal as a column to assign the same value to every row returned by a query. This is most useful for applying a fixed style name:
+
+```sql
+SELECT [Country Code] AS [Item],
+       [Country Name] AS [Label],
+       'Country'      AS [Style Name]
+FROM   [Countries$]
+WHERE  [Currency Code] = 'USD'
+```
+
+Here, every row in the result receives `Country` as its style name regardless of what data the row contains.
+
+## The Edit SQL Statement form
+
+Excel cells display roughly 1,024 characters without entering edit mode, which limits how much of a long query you can see at a glance. The **Edit SQL Statement** form addresses this.
+
+Click **Edit SQL Statement** in the **Edit** group on the **SQL** ribbon tab — or click the pencil button that appears on the right side of any selected SQL cell. A modal window opens showing the full contents of the cell with horizontal and vertical scrollbars. Edit the text freely, then click **Save** to write it back to the cell.
+
+The **Copy to Clipboard** button in the same group copies the raw text of the selected cell to the Windows clipboard without escaping quotes, making it easy to paste into an external SQL editor.
+
+## The SQL ribbon tab
+
+The **SQL** ribbon tab appears whenever the **sql** worksheet is active. It contains seven groups:
+
+<AccordionGroup>
+  <Accordion title="SQL group">
+    | Button | Description |
+    |--------|-------------|
+    | **Run SQL Commands** | Executes all queries on the worksheet from top to bottom and writes results to the **data** worksheet. |
+    | **Clear Status** | Clears all values in the **Status** column so you can re-run cleanly. |
+  </Accordion>
+
+  <Accordion title="Edit group">
+    | Button | Description |
+    |--------|-------------|
+    | **Edit SQL Statement** | Opens the full-screen edit form for the selected cell. |
+    | **Copy to Clipboard** | Copies the selected cell's text to the clipboard without escaping quotes. |
+  </Accordion>
+
+  <Accordion title="Graphviz group">
+    Convenience buttons that mirror the commands on the main **Graphviz** ribbon tab so you can visualize or publish without switching tabs.
+
+    | Button | Description |
+    |--------|-------------|
+    | **Visualize** | Renders the **data** worksheet and displays the graph in Excel. |
+    | **Publish** | Renders and writes the graph to a file using the current Graphviz ribbon settings. |
+    | **Publish all views** | Renders every defined view and writes each to a file. |
+  </Accordion>
+
+  <Accordion title="Filter group">
+    The filter controls let you limit which rows are processed during a run. Select a column letter in **Filter Column** and a value in **Filter Value**; only rows where that column matches the selected value are executed. Click **Refresh** to update the **Filter Value** list after changing data.
+  </Accordion>
+
+  <Accordion title="Data File group">
+    Use these controls to point all your queries at an external workbook without editing column C on every row.
+
+    | Control | Description |
+    |---------|-------------|
+    | **Get Data Directory** | Opens a folder picker. The selected path replaces the button label. |
+    | **File Name** | Lists Excel files in the selected directory. Choosing a file sets it as the default data source. |
+    | **Reset** | Clears the directory and file name selections. |
+
+    <Tip>
+      This is ideal when you run the same queries against recurring exports — for example, one workbook per month. Select the directory, pick the file for the period you want, and run without modifying any SQL.
+    </Tip>
+  </Accordion>
+
+  <Accordion title="Connection Pool group">
+    Connection pooling (added in Version 7.0) reuses ADO connections across all queries in a single **Run SQL Commands** batch, which can dramatically improve performance when querying external workbooks.
+
+    | Control | Description |
+    |---------|-------------|
+    | **Close connections after 'Run SQL'** | Toggle. When off, connections stay open for the next run. When on, connections close after each batch. |
+    | **Close all connections** | Closes all currently open connections. The button shows the count of open connections. |
+
+    <Note>
+      Keeping connections open improves performance but may prevent you from opening or editing the referenced workbooks until you close the connections.
+    </Note>
+  </Accordion>
+
+  <Accordion title="Help group">
+    Opens the documentation page for the **sql** worksheet.
+  </Accordion>
+</AccordionGroup>
+
+## Common error causes
+
+When a query shows **FAILURE**, the error message in column D usually points to one of these causes:
+
+<AccordionGroup>
+  <Accordion title="Missing $ in the worksheet name">
+    ADO requires the worksheet name to end with `$`. `[Countries]` fails; `[Countries$]` succeeds.
+  </Accordion>
+
+  <Accordion title="Worksheet not found">
+    The error "'xyz' is not a valid name" usually means the worksheet is misspelled, does not exist in the target workbook, or no external workbook was specified. Double-check the name in your `FROM` clause and verify the data file setting.
+  </Accordion>
+
+  <Accordion title="Missing square brackets">
+    Column and worksheet names that contain spaces, punctuation, or non-alphanumeric characters must be enclosed in `[ ]`. `Country Code` fails; `[Country Code]` succeeds.
+  </Accordion>
+
+  <Accordion title="Double quotes used instead of square brackets">
+    `"Country Code"` is a string literal, not a column reference. Always use `[Country Code]` for identifiers.
+  </Accordion>
+
+  <Accordion title="Header row not in row 1">
+    ADO expects column headers in the first row of the worksheet. If your data starts lower, the query returns no rows or incorrect results.
+  </Accordion>
+
+  <Accordion title="Mixed data types in a column">
+    Excel infers column types from the first eight rows. If a column mixes numbers and text, comparisons may behave unexpectedly. Consider casting or filtering to a consistent type.
+  </Accordion>
+
+  <Accordion title="Hidden or filtered rows">
+    ADO reads the entire worksheet, including hidden rows. Apply any filtering you need directly in the SQL `WHERE` clause.
+  </Accordion>
+
+  <Accordion title="External workbook path not fully qualified">
+    When referencing another workbook, provide the full path. A filename alone will not resolve if the workbook is not in the same directory as the Relationship Visualizer workbook.
+  </Accordion>
+</AccordionGroup>

@@ -1,122 +1,85 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Excel to Graphviz",
+  "theme": "almond",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#328f5f",
+    "light": "#8cdab7",
+    "dark": "#cfe5d9"
   },
-  "favicon": "/favicon.svg",
-  "navigation": {
-    "tabs": [
-      {
-        "tab": "Guides",
-        "groups": [
-          {
-            "group": "Getting started",
-            "pages": [
-              "index",
-              "quickstart",
-              "development"
-            ]
-          },
-          {
-            "group": "Customization",
-            "pages": [
-              "essentials/settings",
-              "essentials/navigation"
-            ]
-          },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "API reference",
-        "groups": [
-          {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
-            ]
-          }
-        ]
-      }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
+  "favicon": "https://media.brand.dev/a1680979-bcfa-4a79-abd1-15db3b9fb4bf.png",
   "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
     "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "type": "github",
+      "href": "https://github.com/jjlong150/ExcelToGraphviz"
     }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "github": "https://github.com/jjlong150/ExcelToGraphviz"
     }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation/windows",
+              "installation/macos"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/terminology",
+              "concepts/data-worksheet",
+              "concepts/styles",
+              "concepts/views"
+            ]
+          },
+          {
+            "group": "Building Graphs",
+            "pages": [
+              "guides/creating-graphs",
+              "guides/style-designer",
+              "guides/clusters",
+              "guides/advanced-graphviz"
+            ]
+          },
+          {
+            "group": "SQL Data Import",
+            "pages": [
+              "sql/overview",
+              "sql/queries",
+              "sql/extensions",
+              "sql/recursion-and-iteration"
+            ]
+          },
+          {
+            "group": "Publishing & Export",
+            "pages": [
+              "publishing/publish-graphs",
+              "publishing/svg-animation",
+              "publishing/json-exchange"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/graphviz-tab",
+              "reference/launchpad",
+              "reference/settings",
+              "reference/diagnostics",
+              "reference/changelog"
+            ]
+          }
+        ]
+      }
+    ]
   }
 }

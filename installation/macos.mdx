@@ -1,0 +1,159 @@
+---
+title: "Install the Relationship Visualizer on Apple macOS"
+description: "Install Graphviz via Homebrew, configure the AppleScript file, open the xlsm workbook, and enable macros to start diagramming on Apple macOS."
+---
+
+Setting up the Relationship Visualizer on macOS requires a few more steps than on Windows because of how Microsoft Office sandboxes Excel on macOS. You will install Graphviz via Homebrew, configure an AppleScript file that bridges Excel's sandbox to the `dot` command, and then open the workbook in Excel. Follow each step in order.
+
+<Note>
+SQL queries and Clipboard features are not available on macOS. Core diagramming — entering data in the **data** worksheet, applying styles, rendering graphs, and exporting files — works fully on both platforms.
+</Note>
+
+<Steps>
+  <Step title="Install Graphviz via Homebrew">
+    The Relationship Visualizer requires [Graphviz](https://graphviz.org/) to render diagrams. The recommended installation method on macOS is [Homebrew](https://brew.sh/).
+
+    If you do not have Homebrew installed, follow the instructions at [brew.sh](https://brew.sh/) to install it first.
+
+    Once Homebrew is ready, install Graphviz by running this command in Terminal:
+
+    ```bash
+    brew install graphviz
+    ```
+
+    Homebrew downloads and installs Graphviz and all its dependencies automatically.
+  </Step>
+
+  <Step title="Register Graphviz plugins and verify the installation">
+    After Graphviz installs, you must register its plugins. Open a **Terminal** window and run:
+
+    ```bash
+    sudo dot -c
+    ```
+
+    Enter your administrator password when prompted. No output is displayed — this is expected.
+
+    <Warning>
+    Do not skip the `sudo dot -c` step. Graphviz plugins must be registered before the Relationship Visualizer can render graphs. Skipping this step causes silent rendering failures.
+    </Warning>
+
+    Verify that Graphviz is installed correctly by running:
+
+    ```bash
+    dot -V
+    ```
+
+    Note the `-V` flag is uppercase. You should see output like:
+
+    ```
+    dot - graphviz version 12.2.1 (20241206.2353)
+    ```
+
+    If `dot` is not found, check that Homebrew completed without errors and that `/usr/local/bin` (Intel Mac) or `/opt/homebrew/bin` (Apple Silicon) is on your PATH.
+  </Step>
+
+  <Step title="Download and extract the Relationship Visualizer">
+    Download `RelationshipVisualizer.zip` from [SourceForge](https://sourceforge.net/projects/relationship-visualizer/files/latest/download). SourceForge is the only official distribution point — if you obtained the file from another source, download the latest version directly from SourceForge to ensure it has not been tampered with.
+
+    Extract the ZIP file. The archive contains:
+    - `Relationship Visualizer.xlsm` — the main workbook
+    - `ExcelToGraphviz.applescript` — required for macOS
+    - `samples/` — example workbooks
+    - License files
+
+    You can store the extracted files anywhere on your Mac.
+  </Step>
+
+  <Step title="Configure and install the AppleScript file">
+    Because Microsoft Excel for Mac is sandboxed, it cannot call command-line tools directly. The Relationship Visualizer uses an AppleScript file (`ExcelToGraphviz.applescript`) to bridge between Excel and the `dot` command. This file must be installed in a specific folder that Microsoft's sandbox rules permit.
+
+    **Check the dot path**
+
+    First, confirm where Homebrew installed the `dot` command:
+
+    ```bash
+    which dot
+    ```
+
+    Homebrew typically installs `dot` at `/usr/local/bin/dot` (Intel Mac) or `/opt/homebrew/bin/dot` (Apple Silicon Mac).
+
+    **Edit the AppleScript if needed**
+
+    Open `ExcelToGraphviz.applescript` in a text editor. Near the top of the file, find the path `/usr/local/bin/dot`. If `which dot` returned a different path, update this line to match.
+
+    **Copy the AppleScript to the sandbox folder**
+
+    Copy `ExcelToGraphviz.applescript` to the folder `~/Library/Application Scripts/com.microsoft.Excel`. This is the location Microsoft requires for scripts called from Excel macros.
+
+    To navigate to this folder in Finder:
+
+    1. Open a Finder window.
+    2. Hold the `Option` key and click **Go** in the menu bar.
+    3. Click **Library**.
+    4. Open **Application Scripts** (create this folder if it does not exist).
+    5. Open **com.microsoft.Excel** (create this folder if it does not exist — note the capital `E`).
+    6. Copy `ExcelToGraphviz.applescript` into this folder.
+
+    Alternatively, copy the file from Terminal:
+
+    ```bash
+    mkdir -p ~/Library/Application\ Scripts/com.microsoft.Excel
+    cp /path/to/ExcelToGraphviz.applescript ~/Library/Application\ Scripts/com.microsoft.Excel/
+    ```
+
+    <Tip>
+    Microsoft Excel is sandboxed on macOS, which means it can only run scripts located in specific approved folders. The `~/Library/Application Scripts/com.microsoft.Excel` path is the folder Microsoft designates for Excel scripts. The Relationship Visualizer uses the `AppleScriptTask` VBA command to call this script, which in turn runs the `dot` command outside the sandbox.
+    </Tip>
+  </Step>
+
+  <Step title="Open the workbook and enable macros">
+    Double-click `Relationship Visualizer.xlsm` to open it in Microsoft Excel for Mac.
+
+    When Excel displays a security warning about macros, click **Enable Macros** (or **Enable Content**, depending on your Excel version). The Relationship Visualizer is built entirely on VBA macros and cannot function without them.
+
+    <Warning>
+    Enable macros only for workbooks from sources you trust. Download the Relationship Visualizer exclusively from the [official SourceForge page](https://sourceforge.net/projects/relationship-visualizer/) to ensure the file is authentic.
+    </Warning>
+
+    Once macros are enabled, the **Graphviz** and **Launchpad** tabs appear in the Excel ribbon.
+  </Step>
+
+  <Step title="Save the workbook as a template">
+    To make it easy to start new diagrams in the future without clearing old data, save the workbook as a template:
+
+    1. From the **File** menu, select **Save as Template…**
+    2. In the save dialog, enter a name (e.g., `Relationship Visualizer`).
+    3. Set the file format to **Excel Macro-Enabled Template (.xltm)**.
+    4. Click **Save**. Excel saves the template to your Microsoft Office Templates directory automatically.
+
+    In the future, create a fresh copy by going to **File** → **New from Template** and selecting **Relationship Visualizer**.
+  </Step>
+</Steps>
+
+## Verify your setup
+
+Open the workbook, navigate to the **data** worksheet, and enter `a` in the **Item** column and `b` in the **Related Item** column of the first row. Click the **Graphviz** tab in the ribbon and ensure the **Automatic** toggle is on. A graph with a single arrow from `a` to `b` should appear.
+
+If no graph appears, check the following:
+
+- Confirm `dot -V` in Terminal returns a version number.
+- Confirm `ExcelToGraphviz.applescript` is in `~/Library/Application Scripts/com.microsoft.Excel/`.
+- Confirm the path at the top of `ExcelToGraphviz.applescript` matches the output of `which dot`.
+- Open the `console` worksheet in the workbook to view any error messages from the `dot` command.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Learn how to enter data, enable automatic rendering, and render your first graph.
+  </Card>
+  <Card title="Data worksheet" icon="table" href="/concepts/data-worksheet">
+    Understand all available columns and how they control graph output.
+  </Card>
+  <Card title="Style designer" icon="palette" href="/guides/style-designer">
+    Build reusable styles for nodes, edges, and clusters.
+  </Card>
+  <Card title="Publishing and export" icon="file-export" href="/publishing/publish-graphs">
+    Export diagrams as SVG, PNG, PDF, and add tooltips to SVG output.
+  </Card>
+</CardGroup>

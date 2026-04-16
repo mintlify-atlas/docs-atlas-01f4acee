@@ -1,97 +1,69 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Excel to Graphviz: Turn Spreadsheet Data Into Diagrams"
+description: "The Relationship Visualizer is a free Excel add-in that converts tabular spreadsheet data into professional Graphviz diagrams — no coding required."
 ---
 
-## Setting up
+The **Relationship Visualizer** is a free, cross-platform Excel workbook that transforms rows of data into professional Graphviz diagrams. Define nodes, edges, and styles directly in Excel cells, then render stunning org charts, dependency trees, network graphs, timelines, and more — all without writing a line of code.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Get diagramming in minutes — download, open, and render your first graph.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Install on Windows" icon="windows" href="/installation/windows">
+    Step-by-step Windows installation including Graphviz setup.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Install on macOS" icon="apple" href="/installation/macos">
+    Configure the Relationship Visualizer on Apple macOS.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Core Concepts" icon="book" href="/concepts/terminology">
+    Learn the Graphviz fundamentals: nodes, edges, clusters, layouts, and splines.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## What you can build
 
-Everything you need to create world-class documentation.
+From org charts to dependency timelines, the Relationship Visualizer handles a wide variety of diagram types — all driven directly from Excel data.
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+<CardGroup cols={2}>
+  <Card title="Create graphs from Excel data" icon="table" href="/guides/creating-graphs">
+    Enter nodes and relationships in the data worksheet and watch graphs render automatically.
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
+  <Card title="Design reusable styles" icon="palette" href="/guides/style-designer">
+    Use the built-in Style Designer to create and save named styles for nodes, edges, and clusters.
   </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
+  <Card title="Import data with SQL" icon="database" href="/sql/overview">
+    Write SQL queries to pull data from any Excel workbook or Access database (Windows only).
   </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
+  <Card title="Publish & animate SVGs" icon="file-export" href="/publishing/publish-graphs">
+    Export diagrams as SVG, PNG, PDF and add JavaScript animations to SVG output.
   </Card>
-</Columns>
+</CardGroup>
 
-## Need inspiration?
+## Key features
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<AccordionGroup>
+  <Accordion title="Multiple layout engines">
+    Choose from eight Graphviz layout engines with a single click: **dot** (hierarchical), **neato** (spring model), **fdp** (force-directed), **sfdp** (large graph), **circo** (circular), **twopi** (radial), **osage** (array/cluster), and **patchwork** (squarified treemap).
+  </Accordion>
+  <Accordion title="Built-in Style Designer">
+    The interactive Style Designer worksheet lets you compose Graphviz format strings visually — pick shapes, colors, gradients, fonts, border styles, and edge arrowheads — then save them as named styles for reuse across your data.
+  </Accordion>
+  <Accordion title="SQL data import (Windows)">
+    Write SQL SELECT statements on the `sql` worksheet to import data from other Excel workbooks or Access databases. Chain multiple queries, use recursion for trees, and iterate over result sets — all without leaving Excel.
+  </Accordion>
+  <Accordion title="SVG animation & tooltips">
+    Post-process exported SVG files using find/replace rules on the `svg` worksheet. Add hover tooltips, clickable node animations, and JavaScript-driven interactivity to any diagram.
+  </Accordion>
+  <Accordion title="Multilingual ribbon">
+    The Ribbon interface ships in English (US/UK), French, German, Italian, and Polish. All translations are stored in editable worksheets so you can correct or extend them.
+  </Accordion>
+  <Accordion title="JSON data exchange">
+    Export and import workbook data, styles, and settings as JSON for version control, sharing, or programmatic generation of diagram content.
+  </Accordion>
+</AccordionGroup>
+
+## Platform support
+
+<Note>
+The Relationship Visualizer runs on both **Microsoft Windows** and **Apple macOS**. SQL queries and Clipboard features are available on Windows only. Core diagramming — entering data, applying styles, rendering graphs, and exporting files — works fully on both platforms.
+</Note>

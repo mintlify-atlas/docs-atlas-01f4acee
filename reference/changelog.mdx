@@ -1,0 +1,161 @@
+---
+title: "Relationship Visualizer release notes and version history"
+description: "Relationship Visualizer version history — n-level clusters, SQL placeholders, Concatenation Mode, Floating Action Buttons, and summary of prior versions."
+---
+
+This page summarizes the changes in each release of the Relationship Visualizer. The most recent version is listed first.
+
+For downloadable release packages, visit the [GitHub releases page](https://github.com/jjlong150/ExcelToGraphviz/releases).
+
+<AccordionGroup>
+  <Accordion title="v10.3.0" defaultOpen>
+    This release continues to expand the SQL capabilities of the Relationship Visualizer.
+
+    **N-level cluster support**
+
+    SQL clustering previously supported only two levels via `CLUSTER` and `SUBCLUSTER` column names. You can now define an open-ended number of cluster levels using integer-suffixed field names:
+
+    ```sql
+    SELECT [continent] AS [CLUSTER1], [country] AS [CLUSTER2],
+           [state] AS [CLUSTER3], [county] AS [CLUSTER5],
+           [city] AS [CLUSTER6] ...
+    ```
+
+    Each level supports its own label, tooltip, style name, and attributes — for example, `[CLUSTER1 LABEL]`, `[CLUSTER1 STYLE NAME]`, `[CLUSTER1 ATTRIBUTES]`, and `[CLUSTER1 TOOLTIP]`.
+
+    **`{label}` placeholder in cluster labels**
+
+    A `{label}` substitution token is now available in cluster label format strings. This allows HTML-like format strings — including embedded images — to be stored in a saved style. When the graph renders, the label value from the `data` worksheet replaces the `{label}` token.
+
+    **Revised format-string parsing**
+
+    The logic that interprets saved style formats now correctly recognizes HTML-like syntax and passes it through to the **Style Designer** when you click **Edit Style**.
+
+    **Refresh-all-previews improvement**
+
+    The progress-bar dialog shown when refreshing all style previews has been removed. Progress is now shown in the Excel status bar instead.
+  </Accordion>
+
+  <Accordion title="v10.2.0">
+    This release focuses on expanding SQL capabilities.
+
+    **SQL placeholder substitution**
+
+    SQL statements now support `SET PLACEHOLDER name = value` definitions. You can use `{name}` tokens anywhere in your SQL statements, and the Relationship Visualizer expands them before execution. This enables template-style SQL for parameter-driven queries.
+
+    **Filename sanitization**
+
+    A sanitization routine now replaces invalid characters in output file names, preventing file write errors when the computed name contains characters that the operating system does not allow.
+  </Accordion>
+
+  <Accordion title="v10.1.0">
+    This release focuses on SQL capabilities and usability improvements.
+
+    **Concatenation Mode**
+
+    A new mode for iterative SQL queries lets you combine multiple detail records into a single string per header row — for example, a list of songs under an album, or a list of countries per continent.
+
+    **Floating Action Buttons**
+
+    Context-sensitive floating icons now appear next to selected cells in supported columns:
+
+    - On the `sql` worksheet:
+      - `✎` Edit this SQL statement
+      - `▶` Run this SQL statement
+      - `⌕` View query status in a dialog
+    - On the `styles` worksheet:
+      - `✎` Edit this style in the Style Designer
+      - `↻` Refresh this style's preview image
+
+    Buttons appear and disappear automatically on selection, respect sheet protection, and include per-button validation (for example, the **Run** button only appears when the active row contains a valid `SELECT` statement).
+
+    **Image Zoom dropdown list**
+
+    The Image Zoom dropdown list removed in the v9.0 UI refresh has been restored. The v9.0 **Zoom In** (+) and **Zoom Out** (−) buttons and 5%–150% range are retained alongside the restored dropdown.
+  </Accordion>
+
+  <Accordion title="v10.0.0">
+    This release significantly expanded SQL capabilities.
+
+    - Added support for **Microsoft Access** (`.accdb` / `.mdb`) files as SQL data sources
+    - Added SQL **enumeration** for generating range-based result sets (`from x to y by z`)
+    - Added **iterative query-set** execution with dynamic placeholder substitution
+    - Added SQL **error logging** to an external log file
+    - Implemented comprehensive **ADO SQL hardening** for improved reliability and fault tolerance
+    - Expanded the SQL log to include **environment documentation**
+    - Abbreviated long file-system paths in the `SQL` and **Graphviz** ribbon tabs for readability
+
+    **Breaking change:** SQL query clustering previously grouped by `CLUSTER LABEL` instead of `CLUSTER`, and failed when cluster labels were null. The fix correctly groups by `CLUSTER`, but is not backward-compatible. If you use cluster-oriented SQL statements, you must update them.
+  </Accordion>
+
+  <Accordion title="v9.1.0">
+    **Font Name improvements in the Style Designer**
+
+    - Removed prefix/suffix–based screening logic that was excluding valid fonts, expanding the available font choices
+    - Added an **excluded fonts** list on the `lists` worksheet for fonts that Graphviz converts to a fallback
+    - Added deduplication and alphabetical sorting to the final font list
+    - Updated the Style Designer ribbon to use a two-image preview approach: the legacy `A` icon plus a wider 14-pt `Aa Bb Cc` preview image
+  </Accordion>
+
+  <Accordion title="v9.0.0">
+    **UI visual refresh**
+
+    Replaced all built-in Office ribbon icons with [Google Material icons](https://fonts.google.com/icons) for a modernized, consistent appearance across Windows and macOS.
+
+    **Breaking change:** Several dropdown lists were redesigned as radio-button–style toggle buttons — **Zoom**, **Layout**, and **Splines** on the **Graphviz** tab, and **Scale** and **Image Position** in the Style Designer.
+
+    **Silent Mode / Message Routing**
+
+    You can now disable message boxes entirely. Errors and notifications can be routed independently to:
+    - Message boxes
+    - The Excel status bar
+    - The `console` worksheet
+
+    **Graphviz 14.1.0 `radius` attribute**
+
+    The **Style Designer** edge mode now includes a gallery control that visually previews `radius` values from 0 to 20 for rounding corners on orthogonal edges.
+
+    **Image Zoom redesign**
+
+    Replaced fixed zoom levels (25%, 50%, 75%, 100%) with a 5%–150% range in 5% increments, controlled via **Zoom In** and **Zoom Out** buttons.
+
+    **Windows ribbon performance**
+
+    Removed the one-second delay when switching ribbon tabs after selecting a worksheet. Windows now switches tabs instantly.
+  </Accordion>
+
+  <Accordion title="v8.0.0">
+    **Style Designer — ribbon galleries**
+
+    Replaced dropdown controls with ribbon galleries (visual grid-style selectors):
+    - Color galleries display full color schemes in a compact format
+    - Font names include gallery previews at increased size
+    - Node shapes, edge arrowheads, arrowtails, and port choices are logically grouped
+
+    **RGB Color Picker**
+
+    Added native OS color picker support on both Windows and macOS. The picker can be preloaded with a color from Graphviz X11, SVG, or Brewer color schemes.
+
+    **Enhanced style saving**
+
+    - Labels (`label`, `xlabel`, `headlabel`, `taillabel`) can optionally be saved as part of the style format string
+    - Added support for naming styles when saving
+    - Added a prominent **Save** button inside the style definition canvas
+
+    **Performance improvements**
+
+    - Faster font exclusion algorithm on Windows
+    - Optimized string comparisons and concatenations
+    - Images are pre-cached at workbook open when available
+  </Accordion>
+
+  <Accordion title="Earlier versions">
+    **v7.2.0** — Added recursive SQL queries for building hierarchies such as org charts and connected data paths.
+
+    **v7.1.0** — Fixed a freeze that occurred when Graphviz wrote more than 4096 bytes of message output.
+
+    **v7.0.0** — Introduced metric units (millimeters) as a display alternative to Graphviz's native inches, with automatic conversion. Added translation worksheets for user-adjustable locale strings. Six languages supported: English (US), English (UK), French, German, Italian, and Polish.
+
+    For the complete history of all earlier releases, see the [GitHub releases page](https://github.com/jjlong150/ExcelToGraphviz/releases).
+  </Accordion>
+</AccordionGroup>

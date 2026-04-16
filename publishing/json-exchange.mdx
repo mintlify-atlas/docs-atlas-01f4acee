@@ -1,0 +1,142 @@
+---
+title: "Export and import Relationship Visualizer data as JSON"
+description: "Use the Exchange ribbon tab to export data, styles, and settings as a JSON file and import them back into any Relationship Visualizer workbook."
+---
+
+Excel workbooks are binary files stored as ZIP archives internally, which makes them a poor fit for version control systems, plain-text sharing platforms, and programmatic generation. The **Exchange** tab solves this by letting you serialize the workbook's content—data rows, style definitions, SQL queries, SVG post-processing rules, and graphing settings—into a human-readable JSON file. You can export the entire workbook or only the sections you need, then import that JSON into any other Relationship Visualizer workbook with equal flexibility.
+
+<Note>
+JSON exchange is particularly useful for version controlling diagram content in Git. Because the exported file is plain text, you can commit it to a repository, diff it between revisions, and track exactly what changed in your graph data or styles over time.
+</Note>
+
+## The Exchange ribbon tab
+
+The **Exchange** tab is always visible and is not associated with a specific worksheet. It provides two primary actions—**Export JSON** and **Import JSON**—along with a set of checkboxes that control exactly which sections of the workbook are included in the operation.
+
+### What you can include
+
+| Section | Description |
+|---------|-------------|
+| Graphing Options | Layout engine choices, spline settings, and other ribbon-level graph options |
+| Workbook Metadata | User name, Excel version, OS, export date and time, and workbook filename |
+| Worksheet Layouts | Column widths, row heights, hidden/visible state, and column headings |
+| `data` worksheet | All relationship rows from the data worksheet |
+| `styles` worksheet | All named style definitions and their view switches |
+| `sql` worksheet | All SQL query rows used for database-driven graph generation |
+| `svg` worksheet | All SVG post-processing find-and-replace rules |
+
+Each worksheet section (`data`, `styles`, `sql`, `svg`) also exposes export options to include the original row number, row height, and row visibility state in the JSON output.
+
+## Exporting to JSON
+
+<Steps>
+  <Step title="Select the sections to export">
+    On the **Exchange** ribbon tab, check the sections you want to include. To export the full workbook, enable all sections. To share only style definitions with a colleague, enable just the **`styles` Worksheet** option.
+
+    For each worksheet section, you can also choose to include:
+    - **Include row number** — the original row position in the worksheet
+    - **Include row height** — the height of each row
+    - **Include row visibility** — whether each row was visible or hidden
+  </Step>
+
+  <Step title="Click Export JSON">
+    Press **Export JSON**. A save dialog opens prompting you to choose a filename and location for the `.json` file.
+  </Step>
+
+  <Step title="Name and save the file">
+    Enter a filename and press **Save**. The tool writes the selected sections to the file and displays a confirmation dialog when complete. Press **OK** to dismiss it.
+  </Step>
+</Steps>
+
+### JSON structure example
+
+The exported file follows a structured format. Here is an excerpt showing workbook metadata and a data row:
+
+```json
+{
+  "metadata": {
+    "name": "E2GXF",
+    "type": "Excel to Graphviz Exchange Format",
+    "version": "1.0",
+    "user": "Jeffrey Long",
+    "date": "2023-04-09",
+    "time": "12:17:35",
+    "os": "Windows (64-bit) NT 10.00",
+    "excel": "16.0",
+    "filename": "Relationship Visualizer.xlsm"
+  },
+  "content": {
+    "data": [
+      {
+        "row": 3,
+        "hidden": false,
+        "height": 15,
+        "item": "Parts",
+        "relatedItem": "Assembly"
+      },
+      {
+        "row": 4,
+        "hidden": false,
+        "height": 15,
+        "item": "Assembly",
+        "relatedItem": "Paint",
+        "extraAttributes": {
+          "weight": "100"
+        }
+      }
+    ]
+  }
+}
+```
+
+<Tip>
+You can export just the `styles` worksheet to share a set of visual style definitions with a team member, or export just the `data` worksheet to hand off relationship data to someone building on the same style foundation. The import step lets the recipient choose to **Append** or **Replace** each section independently.
+</Tip>
+
+## Importing JSON
+
+<Steps>
+  <Step title="Select the sections to import">
+    On the **Exchange** ribbon tab, enable the checkboxes for the sections you want to bring in. You do not need to import everything that was exported—select only what you need.
+  </Step>
+
+  <Step title="Choose an import mode for each worksheet">
+    For each of the `data`, `styles`, `sql`, and `svg` worksheet sections, pick one of two import modes from the dropdown:
+
+    - **Replace** (default) — clears the existing worksheet content and replaces it with the imported data. Use this when loading into an empty worksheet or starting fresh.
+    - **Append** — adds the imported rows after the existing content without removing anything. Use this when consolidating data from multiple sources into one workbook.
+
+    <Info>
+      **Append** is useful when multiple people prepare data independently. For example, two team members can each export their portion of a graph, then one person imports the other's file with **Append** to combine both datasets into a single workbook.
+    </Info>
+  </Step>
+
+  <Step title="Click Import JSON">
+    Press **Import JSON**. A file picker opens prompting you to choose an Excel to Graphviz data exchange file.
+  </Step>
+
+  <Step title="Select the file and confirm">
+    Navigate to your `.json` file, select it, and press **OK**. The import runs and may take several seconds depending on the size of the file.
+  </Step>
+
+  <Step title="Refresh the graph">
+    If **Automatic Refresh** is enabled on the **Graphviz** tab, the diagram updates immediately after the import completes. Otherwise, press **Refresh Graph** to render the newly imported data.
+  </Step>
+</Steps>
+
+## Common use cases
+
+<CardGroup cols={2}>
+  <Card title="Version control with Git" icon="code-branch">
+    Export the workbook to JSON and commit the file to a Git repository. Each commit captures a snapshot of your data, styles, and settings so you can diff, revert, or branch diagram content just like source code.
+  </Card>
+  <Card title="Sharing configurations" icon="share">
+    Export only the `styles` worksheet and send the JSON file to a colleague. They import it into their own workbook to apply the same visual language to their data—no binary file transfer required.
+  </Card>
+  <Card title="Workbook upgrades" icon="arrow-up-circle">
+    When a new version of the Relationship Visualizer is released, export your data from the old workbook and import it into the new one. This avoids manually copying rows across worksheets.
+  </Card>
+  <Card title="Programmatic generation" icon="terminal">
+    Generate the JSON file with a script or external tool, then import it into the workbook. This lets you drive diagram content from a database, API, or build pipeline without opening Excel manually.
+  </Card>
+</CardGroup>

@@ -1,0 +1,96 @@
+---
+title: "Launchpad ribbon tab: full control reference guide"
+description: "Complete control reference for the Launchpad tab — language, units, worksheet visibility, style tools, data exchange, and workbook maintenance settings."
+---
+
+The **Launchpad** tab is always visible and serves as the home base for managing the workbook. It appears as the first Relationship Visualizer tab after Excel's **Help** tab. The `||` characters in the ribbon mark where Excel's built-in tabs end and the Relationship Visualizer tabs begin.
+
+Unlike the **Graphviz** tab, the **Launchpad** tab is always present regardless of which worksheet is active. Use it to show or hide worksheets, configure the language and units of measure, access diagnostic tools, and set up extensions.
+
+<Note>
+Some groups shown here are Windows-only. On macOS, the **SQL** toggle in the **Data Exchange** group is hidden because Microsoft does not provide the libraries required to run SQL on macOS.
+</Note>
+
+## Style group
+
+The **Style** group gives you quick access to the worksheets used to build and manage style definitions.
+
+| Control | Type | Description |
+|---|---|---|
+| **style designer** | Toggle button | Shows or hides the `style designer` worksheet, where you visually compose format strings for nodes, edges, and clusters. |
+| **styles** | Toggle button | Shows or hides the `styles` worksheet, where saved style definitions are stored and referenced from the `data` worksheet. |
+
+## Data Exchange group
+
+The **Data Exchange** group provides access to tools for importing and exporting workbook data.
+
+| Control | Type | Description |
+|---|---|---|
+| **sql** | Toggle button | Shows or hides the `sql` worksheet for running SQL SELECT statements against external Excel files or Access databases. **Windows only.** |
+| **json** | Toggle button | Shows or hides the **Exchange** ribbon tab, which provides JSON export and import controls. |
+
+## Post-processing group
+
+The **Post-processing** group provides access to SVG post-processing tools.
+
+| Control | Type | Description |
+|---|---|---|
+| **svg** | Toggle button | Shows or hides the `svg` worksheet, where you define find-and-replace operations to apply to published SVG output — for example, adding JavaScript to make graphs interactive. |
+
+## Graphviz dot group
+
+The **Graphviz dot** group gives you access to the `dot` source code and the messages Graphviz emits when it runs, along with reference worksheets for Graphviz attributes, colors, and shapes.
+
+| Control | Type | Description |
+|---|---|---|
+| **source** | Toggle button | Shows or hides the `source` worksheet, which displays the DOT language source code generated from your `data` worksheet. |
+| **console** | Toggle button | Shows or hides the `console` worksheet, which captures the output from `dot` command invocations including warnings and errors. |
+| **attributes** | Toggle button | Shows or hides the `HELP - attributes` worksheet — a reference listing of Graphviz language attributes, their descriptions, and which layout engines support them. |
+| **colors** | Toggle button | Shows or hides the `HELP - colors` worksheet — a visual glossary of Graphviz color schemes and named colors. |
+| **shapes** | Toggle button | Shows or hides the `HELP - shapes` worksheet — a visual glossary of supported node shapes. |
+
+## Maintenance group
+
+The **Maintenance** group provides access to workbook administration worksheets.
+
+| Control | Type | Description |
+|---|---|---|
+| **diagnostics** | Toggle button | Shows or hides the `diagnostics` worksheet, which reports software versions, file paths, and environment information useful for troubleshooting. |
+| **lists** | Toggle button | Shows or hides the `lists` worksheet, which stores the values that populate ribbon dropdown lists at run time. |
+| **settings** | Toggle button | Shows or hides the `settings` worksheet, where you configure Graphviz paths, column layouts, timeout limits, and other workbook-wide options. |
+
+## Language Translations group
+
+The **Language Translations** group lets you view and edit the worksheets that store ribbon and heading labels in each supported language. The tool ships in US English; all other translations are maintained using [DeepL Translator](https://www.deepl.com/) and can be adjusted to suit regional preferences.
+
+| Control | Type | Description |
+|---|---|---|
+| **Deutsch** | Toggle button | Shows or hides the `locale_de-DE` worksheet containing the German translations. |
+| **English (UK)** | Toggle button | Shows or hides the `locale_en-GB` worksheet containing the UK English translations. |
+| **English (US)** | Toggle button | Shows or hides the `locale_en-US` worksheet containing the US English translations. This worksheet also provides the fallback values used when a translation is missing from another locale. |
+| **Français** | Toggle button | Shows or hides the `locale_en-FR` worksheet containing the French translations. |
+| **Italiano** | Toggle button | Shows or hides the `locale_it-IT` worksheet containing the Italian translations. |
+| **Polski** | Toggle button | Shows or hides the `locale_pl-PL` worksheet containing the Polish translations. |
+
+<Tip>
+Because machine translations may not capture regional nuance, you can open any locale worksheet and edit the translated strings directly. Changes take effect the next time you switch the active language.
+</Tip>
+
+## Locale group
+
+The **Locale** group controls which language is displayed in ribbon tabs and worksheet headings, and which unit system is used for size measurements.
+
+| Control | Type | Description |
+|---|---|---|
+| **Set Language** | Dropdown | Selects the active language for ribbon labels and worksheet headings. The change takes effect immediately — you do not need to close and reopen the workbook. |
+| **Verbose Labels** | Toggle button | On macOS, ribbon group names are not shown in the ribbon UI. Enabling verbose labels adds the group name directly into each control's label (for example, "Font Color" instead of "Color") so controls can be distinguished at a glance. On Windows, short labels are shown by default. You can use whichever style you prefer on either platform. |
+| **Metric Units** | Toggle button | Graphviz measures sizes in inches. When this toggle is pressed, the Relationship Visualizer displays values in millimeters and converts them to inches behind the scenes before passing them to Graphviz. |
+
+## Help group
+
+The **Help** group provides access to the `info` worksheet and the online documentation.
+
+| Control | Type | Description |
+|---|---|---|
+| **Info** | Toggle button | Shows or hides the `info` worksheet, which displays the workbook version number, author contact details, and open-source license acknowledgements. |
+| **Help** | Button | Opens the Launchpad documentation page in your browser. |

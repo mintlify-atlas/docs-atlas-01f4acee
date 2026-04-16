@@ -1,0 +1,233 @@
+---
+title: "Writing SQL SELECT queries for Graphviz graph data"
+description: "Map SQL SELECT result columns to the data worksheet to build nodes, edges, and styled graph elements from any Excel workbook or Access database."
+---
+
+Every SQL query on the **sql** worksheet produces rows that are written to the **data** worksheet. The column names — or aliases — you choose in your `SELECT` statement determine which columns on the **data** worksheet receive each value. This page walks through the column mapping, query patterns, and a complete worked example.
+
+<Warning>
+  SQL queries run through ActiveX Data Objects (ADO) and are **Windows only**. macOS users should enter graph data manually on the **data** worksheet.
+</Warning>
+
+## Mapping SELECT columns to the data worksheet
+
+After a query runs, the Relationship Visualizer scans the column names in the result set and places each value into the matching column on the **data** worksheet. The default English column names the tool recognizes are:
+
+| Column name | Purpose |
+|-------------|---------|
+| `[Comment]` | Row comment; not used in graph output |
+| `[Item]` | The source node or the node being defined |
+| `[Label]` | Text displayed inside or near the node |
+| `[External Label]` | Label placed outside the node boundary |
+| `[Tail Label]` | Label near the tail of an edge |
+| `[Head Label]` | Label near the head (arrowhead) of an edge |
+| `[Related Item]` | The target node; when present, an edge is drawn from **Item** to **Related Item** |
+| `[Style Name]` | Name of a style defined on the **styles** worksheet |
+| `[Attributes]` | Raw Graphviz attribute string appended to the element |
+
+Use `AS` to rename source columns to match these names. Any column in the result set that does not match a recognized name is silently ignored.
+
+## Creating nodes
+
+A node row requires at minimum an `[Item]` value. Add `[Label]` and `[Style Name]` to control appearance. The following query creates one node per country:
+
+```sql
+SELECT [Country Code] AS [Item],
+       [Country Name] AS [Label],
+       'Country'      AS [Style Name]
+FROM   [Countries$]
+```
+
+The string literal `'Country'` is repeated for every row returned, assigning the same style to all country nodes. The style named `Country` must be defined on the **styles** worksheet.
+
+## Creating edges
+
+An edge row requires both `[Item]` and `[Related Item]`. The Relationship Visualizer draws an edge from the **Item** node to the **Related Item** node. Add `[Style Name]` to control edge appearance:
+
+```sql
+SELECT [From Station]   AS [Item],
+       [To Station]     AS [Related Item],
+       [Tube Line]      AS [Style Name]
+FROM   [London tube lines$]
+```
+
+Here the tube line name is read from the source data and used as the style name, so each line's edges can have a distinct color or style.
+
+## Combining node and edge queries
+
+A single graph typically needs multiple queries: one or more to define node appearance and one or more to define edges. Each query appends its results to the **data** worksheet in sequence, so you can mix node rows and edge rows freely.
+
+<CodeGroup>
+
+```sql Node query — stations
+SELECT [Station]      AS [Item],
+       [Station]      AS [Label],
+       [Station Type] AS [Style Name]
+FROM   [London stations$]
+```
+
+```sql Edge query — connections
+SELECT [From Station] AS [Item],
+       [To Station]   AS [Related Item],
+       [Tube Line]    AS [Style Name]
+FROM   [London tube lines$]
+```
+
+```sql Node query — continents (distinct)
+SELECT DISTINCT [Continent] AS [Item],
+                [Continent] AS [Label],
+                'Continent' AS [Style Name]
+FROM   [countries$]
+ORDER BY [Continent]
+```
+
+</CodeGroup>
+
+## Filtering with WHERE
+
+Use a `WHERE` clause to return only the rows you need. Multiple conditions combine with `AND` and `OR`:
+
+```sql
+SELECT [Country Code] AS [Item],
+       [Country Name] AS [Label],
+       'Country'      AS [Style Name]
+FROM   [Countries$]
+WHERE  [Currency Code] = 'USD'
+```
+
+To skip rows with empty cells — which are common in relational data — add `IS NOT NULL`:
+
+```sql
+SELECT [ISO]       AS [Item],
+       [Neighbors] AS [Related Item]
+FROM   [countries$]
+WHERE  [Neighbors] IS NOT NULL
+```
+
+## Removing duplicates with SELECT DISTINCT
+
+When a column contains repeated values and you only want unique entries, use `SELECT DISTINCT`. This is typical when extracting category or group nodes from a detail table:
+
+```sql
+SELECT DISTINCT [Continent] AS [Item],
+                [Continent] AS [Label],
+                'Continent' AS [Style Name]
+FROM   [countries$]
+ORDER BY [Continent]
+```
+
+## Sorting with ORDER BY
+
+`ORDER BY` controls the order in which rows are written to the **data** worksheet. Graph layout engines sometimes produce more consistent results when input rows are ordered:
+
+```sql
+SELECT [ISO]       AS [Item],
+       [ISO]       AS [Label],
+       [Country]   AS [External Label],
+       [Continent] AS [Style Name]
+FROM   [countries$]
+WHERE  [ISO] IS NOT NULL
+ORDER BY [Country] ASC
+```
+
+<Note>
+  `ORDER BY` cannot reference column aliases. If you need to sort by an aliased column, use its ordinal position in the `SELECT` list — for example, `ORDER BY 1` to sort by the first selected column.
+</Note>
+
+## Joining multiple worksheets
+
+Excel SQL supports `INNER JOIN`, `LEFT JOIN`, `RIGHT JOIN`, and `CROSS JOIN`. Use joins to combine data from separate worksheets within the same workbook. Alias the worksheets to keep the query readable:
+
+```sql
+SELECT A.[Segment],
+       A.[Country],
+       B.[Units Sold]
+FROM   [Products$] AS A
+INNER JOIN [Sales$] AS B
+ON A.[SKU] = B.[SKU]
+```
+
+For graphs, joins are useful when node properties live in one sheet and relationship data lives in another.
+
+## Querying external workbooks
+
+By default, queries run against the Relationship Visualizer workbook itself. To query a different workbook, specify the file in **column C** of the same row on the **sql** worksheet:
+
+- **Relative filename** (for example, `countries.xlsx`) — the file is looked up in the same directory as the Relationship Visualizer workbook.
+- **Full path** (for example, `C:\Data\countries.xlsx`) — the exact file is used.
+
+You can also set a default workbook for all rows using the **Data File** group on the **SQL** ribbon tab, or by placing a `SET DATA FILE` directive on the **sql** worksheet (the filename goes in column C of the directive row).
+
+## Worked example: world map
+
+The `15 - Using SQL - World Map` sample in the `samples` folder builds a logical world map from a `countries.xlsx` workbook. Four queries work together:
+
+<Steps>
+  <Step title="Create country nodes">
+    Selects `ISO`, `Country`, and `Continent` from the workbook. The continent name doubles as the style name, so each country node is colored by continent.
+
+    ```sql
+    SELECT [ISO]       AS [Item],
+           [ISO]       AS [Label],
+           [Country]   AS [External Label],
+           [Continent] AS [Style Name]
+    FROM   [countries$]
+    WHERE  [ISO] IS NOT NULL
+    ORDER BY [Country] ASC
+    ```
+  </Step>
+
+  <Step title="Create continent nodes">
+    Uses `SELECT DISTINCT` to extract the seven unique continent names and assigns them all the `Continent` style.
+
+    ```sql
+    SELECT DISTINCT [Continent] AS [Item],
+                    [Continent] AS [Label],
+                    'Continent' AS [Style Name]
+    FROM   [countries$]
+    ORDER BY [Continent]
+    ```
+  </Step>
+
+  <Step title="Create country-to-country edges">
+    The `Neighbors` column contains comma-delimited ISO codes. The Relationship Visualizer automatically expands comma-delimited values into multiple edge rows.
+
+    ```sql
+    SELECT [ISO]       AS [Item],
+           [Neighbors] AS [Related Item]
+    FROM   [countries$]
+    WHERE  [Neighbors] IS NOT NULL
+    ```
+  </Step>
+
+  <Step title="Create continent-to-country edges">
+    Groups countries under their continent using an invisible edge style `ContinentToCountry`.
+
+    ```sql
+    SELECT [Continent]          AS [Item],
+           [ISO]                AS [Related Item],
+           'ContinentToCountry' AS [Style Name]
+    FROM   [countries$]
+    WHERE  [ISO] IS NOT NULL
+    ```
+  </Step>
+</Steps>
+
+These four queries produce 678 rows of graph data. Clicking **Run SQL Commands** then **Visualize** renders a logical world map grouped by continent — all from a few lines of SQL.
+
+## Query patterns at a glance
+
+<CardGroup cols={2}>
+  <Card title="Node with style" icon="circle-dot">
+    Select `[Item]`, `[Label]`, and a string constant as `[Style Name]`.
+  </Card>
+  <Card title="Edge with style" icon="arrow-right">
+    Select `[Item]` and `[Related Item]`. Add `[Style Name]` for a named edge style.
+  </Card>
+  <Card title="Distinct categories" icon="layer-group">
+    Use `SELECT DISTINCT` to extract unique values for category or group nodes.
+  </Card>
+  <Card title="Filtered subset" icon="filter">
+    Add `WHERE` to limit the rows returned — useful for dashboards or drill-down views.
+  </Card>
+</CardGroup>

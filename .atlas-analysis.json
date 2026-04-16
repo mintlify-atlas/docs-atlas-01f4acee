@@ -1,0 +1,98 @@
+{
+  "projectType": "general",
+  "projectName": "Excel to Graphviz",
+  "projectDescription": "A free Excel add-in (Relationship Visualizer) that transforms tabular spreadsheet data into professional Graphviz diagrams using a ribbon-based UI — no coding required.",
+  "theme": "almond",
+  "primaryColor": "#328f5f",
+  "lightColor": "#8cdab7",
+  "darkColor": "#cfe5d9",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation/windows",
+              "installation/macos"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/terminology",
+              "concepts/data-worksheet",
+              "concepts/styles",
+              "concepts/views"
+            ]
+          },
+          {
+            "group": "Building Graphs",
+            "pages": [
+              "guides/creating-graphs",
+              "guides/style-designer",
+              "guides/clusters",
+              "guides/advanced-graphviz"
+            ]
+          },
+          {
+            "group": "SQL Data Import",
+            "pages": [
+              "sql/overview",
+              "sql/queries",
+              "sql/extensions",
+              "sql/recursion-and-iteration"
+            ]
+          },
+          {
+            "group": "Publishing & Export",
+            "pages": [
+              "publishing/publish-graphs",
+              "publishing/svg-animation",
+              "publishing/json-exchange"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/graphviz-tab",
+              "reference/launchpad",
+              "reference/settings",
+              "reference/diagnostics",
+              "reference/changelog"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Generate Graphviz DOT diagrams directly from Excel data rows — no coding required",
+    "Ribbon-based UI with layout engine selection (dot, neato, fdp, sfdp, circo, twopi, osage, patchwork)",
+    "Built-in Style Designer for creating and saving reusable node, edge, and cluster styles",
+    "SQL data import from Excel workbooks and Access databases (Windows only)",
+    "Multiple graph layout directions and edge appearance (splines) options",
+    "Publish diagrams as SVG, PNG, PDF, BMP, GIF, JPG, PS, TIFF, or DOT files",
+    "SVG post-processing with find/replace for adding JavaScript animations and tooltips",
+    "JSON import/export for version control of workbook data and styles",
+    "Multilingual Ribbon interface: English (US/UK), French, German, Italian, Polish",
+    "Cross-platform: Windows (full) and macOS (core diagramming without SQL/Clipboard)",
+    "View/save the generated DOT source code with links to external Graphviz tools",
+    "Cluster nodes with nested subgraphs; split data into named views"
+  ],
+  "publicApiSurface": [
+    "data worksheet — Item, Related Item, Label, External Label, Tail Label, Head Label, Style Name, Attributes, Tooltip columns",
+    "styles worksheet — reusable named style definitions for nodes, edges, and clusters",
+    "sql worksheet — SQL SELECT statements to import/transform data from Excel workbooks or Access databases",
+    "svg worksheet — find/replace post-processing rules for SVG animation and customization",
+    "source worksheet — view and export generated DOT source code",
+    "Graphviz ribbon tab — layout engine, graph direction (rankdir), splines, automatic refresh, publish controls",
+    "SQL ribbon tab — Run SQL Commands, Filter, Data File, Connection Pool controls",
+    "Launchpad ribbon tab — language selection, metric/imperial units, worksheet visibility, settings",
+    "Exchange ribbon tab — JSON export/import of workbook data and styles",
+    "Style Designer worksheet — interactive GUI for composing Graphviz format strings"
+  ]
+}

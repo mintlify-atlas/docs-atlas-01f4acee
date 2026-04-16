@@ -1,0 +1,119 @@
+---
+title: "Settings worksheet: Graphviz path and workbook options"
+description: "Reference for the settings worksheet — configure Graphviz path, command options, column layouts, ribbon tab persistence, and custom VBA extensions."
+---
+
+The `settings` worksheet is where you customize the behavior of the Relationship Visualizer at a workbook level. It controls how Graphviz is invoked, where image files are found, how long the engine is allowed to run, how each worksheet's columns are laid out, and how ribbon tab choices are persisted between sessions.
+
+## Opening the settings worksheet
+
+You access the `settings` worksheet from the **Launchpad** ribbon tab.
+
+<Steps>
+  <Step title="Open the Launchpad tab">
+    Click the **Launchpad** tab in the Excel ribbon. It is always visible as the first Relationship Visualizer tab.
+  </Step>
+  <Step title="Click Settings">
+    In the **Maintenance** group, click the **settings** toggle button. The `settings` worksheet opens.
+  </Step>
+</Steps>
+
+## Graph Options section
+
+These settings control the graph-level attributes used when producing diagrams.
+
+| Setting | Description |
+|---|---|
+| **Image Path** | One or more directories where images used in the graph are stored. The workbook directory is searched first, then this path. Separate multiple directories with a semicolon `;`. The **style designer** worksheet automatically appends image directories here. |
+| **Additional Graph Options** | Raw Graphviz graph-level directives to inject at the top of the DOT source. For example: `sep="+30,300"` controls node spacing. You must understand the DOT language to use this field safely. |
+| **"Graph to Worksheet" Picture Name** | The name assigned to the picture object created by **Refresh Graph**. If left blank, Excel assigns a name automatically. |
+
+## Command Options section
+
+These settings control how the Graphviz command-line programs are invoked.
+
+| Setting | Description |
+|---|---|
+| **Additional CMD Parameters** | Extra command-line parameters passed to the layout engine. For example, `-Efontsize="8" -Efontname="Arial"` overrides the default edge font for all edges without explicit style specifications. |
+| **Cancel graphing if not complete in __ seconds** | The maximum number of seconds the graphing engine is allowed to run before being cancelled. Set to `0` for no time limit. |
+| **Path to dot.exe** | The full path to the `dot` executable when Graphviz is not installed or not available via the `PATH` environment variable. |
+
+## Worksheet Settings section
+
+### `data` worksheet
+
+These settings let you rearrange the column layout of the `data` worksheet and restrict which rows are processed.
+
+| Setting | Description |
+|---|---|
+| **`Comment/Error Flag` Column** | The column where `#` comment characters (to skip rows) and `!` error flags are placed. |
+| **`Item` Column** | The column containing node and cluster identifiers. |
+| **`Label` Column** | The column containing the display labels for nodes and edges. |
+| **`External Label` Column** | The column containing `xlabel` values placed outside the node or edge. |
+| **`Tail Label` Column** | The column containing edge tail labels. |
+| **`Head Label` Column** | The column containing edge head labels. |
+| **`Related Item` Column** | The column containing the target node of an edge (the node the `Item` connects to). |
+| **`Style Name` Column** | The column referencing a style defined in the `styles` worksheet. |
+| **`Attributes` Column** | The column containing raw Graphviz attributes applied to a node, edge, or cluster. |
+| **`Messages` Column** | The column where error and warning messages are written during graph generation. |
+| **Heading Row** | The row number containing the column headings. |
+| **First Row** | The first row of data to process. |
+| **Last Row** | The last row of data to process. Set to `0` to process all rows after **First Row**. Useful for testing with a subset of data. |
+
+### `source` worksheet
+
+| Setting | Description |
+|---|---|
+| **`Line Number` Column** | The column that displays the DOT source line numbers. |
+| **`Graphviz Source` Column** | The column where the generated DOT source code is placed. |
+| **Heading Row** | The row containing the column headings. |
+| **First Row** | The first row of source output. |
+| **Tab Indent Spaces** | The number of spaces used to indent each level of nesting in the DOT source. |
+
+### `sql` worksheet
+
+| Setting | Description |
+|---|---|
+| **`Comment/Error Flag` Column** | The column where `#` comment characters mark SQL rows to skip. |
+| **`SQL Statement` Column** | The column containing SQL SELECT statements to execute. |
+| **`Excel File` Column** | The column containing paths to the Excel files the SQL statements run against. |
+| **`Status` Column** | The column where execution status (Success / Failure / Skipped) and error messages are written. |
+| **Heading Row** | The row containing the column headings. |
+| **First Row** | The first row of SQL statements to execute. |
+
+### `styles` worksheet
+
+| Setting | Description |
+|---|---|
+| **`Comment` Column** | The column where `#` comment characters mark style rows to exclude. |
+| **`Style` Column** | The column containing the style name. |
+| **`Format` Column** | The column containing the Graphviz format string for the style. |
+| **`Object-Type` Column** | The column classifying the style as `node`, `edge`, `subgraph-open`, `subgraph-close`, `keyword`, or `native`. |
+| **`First Yes/No View` Column** | The first column of Yes/No switches that control which styles are included in each view. |
+| **Heading Row** | The row containing the column headings. The heading value of the view column is used in output file names. |
+| **First Row** | The first row of style definitions. |
+| **Last Row** | The last row of style definitions. Set to `0` to include all rows after **First Row**. |
+
+## Ribbon Tab Settings section
+
+The ribbon tab settings worksheets store the last-used values from their respective ribbon tabs. Because they are saved in the workbook, your choices persist when you close and reopen it.
+
+### `Graphviz` tab
+
+Stores selected values from the **Graphviz** ribbon tab — the active layout engine, spline setting, graph type, and other rendering choices.
+
+### `Source` tab
+
+Stores six web resource URLs that appear as clickable links on the **Source** ribbon tab. The defaults are suggestions from the author, but you can replace any of them with your own preferred Graphviz references, internal documentation pages, or other resources.
+
+### `Extensions` tab
+
+The **Extensions** tab is an advanced feature for expert users. It lets you register up to six custom VBA action buttons and six custom URL links that appear directly in the ribbon without requiring you to author Ribbon XML or callback code. A sample workbook demonstrating the Extensions feature is included in the examples directory.
+
+### `Exchange` tab
+
+Stores selected values from the **Exchange** ribbon tab — export format, import options, and other data-exchange preferences.
+
+## Help Button URLs section
+
+The **Help Button URLs** worksheet maps each ribbon **Help** button to the URL it opens. Updating a URL here changes the destination for the corresponding button across the entire ribbon. Use this worksheet to point all help links at an internal documentation site or a specific version of the online docs.

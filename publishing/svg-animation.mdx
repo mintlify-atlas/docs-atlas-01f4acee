@@ -1,0 +1,125 @@
+---
+title: "Add interactive tooltips and animations to SVG output"
+description: "Use the svg worksheet's find-and-replace post-processor to inject tooltips, custom styling, and JavaScript animations into exported SVG files."
+---
+
+SVG is an XML-based vector format, which means every element in a Graphviz-generated SVG is plain text you can read and modify. The Relationship Visualizer takes advantage of this by running a find-and-replace pass over the SVG file immediately after Graphviz writes it. You define the substitution rules in the **svg** worksheet, and the tool applies them automatically every time you publish to SVG format. This lets you add hover tooltips, inject JavaScript for click animations, adjust colors, and tweak structure—all without touching the underlying DOT source or Graphviz configuration.
+
+<Tip>
+SVG images scale infinitely without losing quality, making them ideal for diagrams that need to be embedded on web pages, shared in email, or displayed at many different sizes. They are lightweight, text-based, and natively support interactivity and animation.
+</Tip>
+
+## Tooltips on nodes, edges, and clusters
+
+The `data` worksheet accepts a **Tooltip** column. Any text you place in that column appears as a hover tooltip when the SVG is viewed in a browser. You can add tooltips to nodes, edges, and clusters independently, giving viewers context-sensitive information without cluttering the visible diagram labels.
+
+## The svg worksheet
+
+The **svg** worksheet defines the find-and-replace rules that transform the raw Graphviz SVG into a polished output file.
+
+### How it works
+
+When SVG post-processing is active, the tool loads the newly written SVG file into memory and scans the **svg** worksheet from top to bottom. For every row, it searches the SVG's XML for the text in the **Find** column (column B) and replaces every match with the text in the **Replace** column (column C). The rows are processed in order, so earlier rules can set the stage for later ones.
+
+The worksheet has three columns:
+
+| Column | Role |
+|--------|------|
+| A — Indicator | Place a `#` character here to comment out the row and skip it during processing. |
+| B — Find | The exact string to search for in the SVG XML. |
+| C — Replace | The string to substitute wherever the Find value is matched. |
+
+<Note>
+Post-processing is **disabled by default**. You must enable it explicitly by checking the **Postprocess SVG Output** checkbox on the **SVG** ribbon tab before any find-and-replace rules take effect.
+</Note>
+
+### Accessing the svg worksheet
+
+Open the **svg** worksheet from the **Post-processing** section of the **Launchpad** ribbon tab. Once the sheet is active, the **SVG** ribbon tab appears automatically.
+
+## The SVG ribbon tab
+
+The **SVG** ribbon tab provides all the controls you need while authoring post-processing rules:
+
+<AccordionGroup>
+  <Accordion title="SVG group — toggle post-processing">
+    The **Postprocess SVG Output** checkbox controls whether the find-and-replace pass runs when you publish to SVG. It is unchecked by default. Check it once you have rules you want to apply.
+  </Accordion>
+
+  <Accordion title="Edit group — work with long cell content">
+    Excel cells can store up to 32,767 characters but display only a fraction of that in the grid. The **Edit Text** button opens a modal form that shows the full content of the selected cell with horizontal and vertical scrollbars. Edit the text inside the form, then press **Save** to write it back to the cell.
+
+    A floating pencil button also appears on the right side of any selected **Replace** cell and opens the same form. The **Copy to Clipboard** button copies cell text as plain text without escaping quotes, so you can paste it into an external editor.
+  </Accordion>
+
+  <Accordion title="Publish group — publish without leaving the worksheet">
+    While tuning post-processing rules you would normally need to switch to the **Graphviz** ribbon tab to trigger a publish. The **SVG** tab's **Publish** and **Publish all views** buttons duplicate that action so you can iterate without switching tabs.
+  </Accordion>
+</AccordionGroup>
+
+## Built-in animation: click to enlarge
+
+The default **svg** worksheet ships with find-and-replace rules that inject JavaScript into the SVG. When a viewer opens the file in a browser and clicks a node, the node enlarges and the edges connected to it animate—visually tracing the relationships from that node. This interactivity is delivered entirely through inline JavaScript embedded by the post-processing rules, with no external dependencies required.
+
+## Adding custom JavaScript
+
+Because the **Replace** column accepts any text, you can inject arbitrary JavaScript by replacing a known SVG element—such as the closing tag of the root `<svg>` element—with that same tag followed by a `<script>` block containing your code. The steps below outline the approach:
+
+<Steps>
+  <Step title="Identify a stable anchor string">
+    Choose a string in the SVG XML that reliably appears once and marks the location where you want to insert code. The closing `</svg>` tag or the `xmlns` attribute of the root element are common choices.
+  </Step>
+
+  <Step title="Write the Find value">
+    Enter your anchor string in column B of a new row on the **svg** worksheet.
+  </Step>
+
+  <Step title="Write the Replace value">
+    In column C, enter the anchor string again followed by your `<script>` block. This preserves the original element while appending your code immediately after it.
+
+    ```xml
+    </svg>
+    <script type="text/javascript">
+    // your custom code here
+    </script>
+    ```
+
+    Use the **Edit Text** button to author long scripts comfortably outside the cell grid.
+  </Step>
+
+  <Step title="Enable post-processing and publish">
+    Confirm that **Postprocess SVG Output** is checked on the **SVG** ribbon tab, then click **Publish** or **Publish all views**. The tool applies your rules to the freshly generated SVG file automatically.
+  </Step>
+</Steps>
+
+<Warning>
+When injecting JavaScript, make sure the code is self-contained and does not reference external libraries unless you explicitly include them in the SVG. Scripts that rely on CDN-hosted libraries will fail in offline environments.
+</Warning>
+
+## Best practices
+
+<AccordionGroup>
+  <Accordion title="Target specific patterns">
+    Use Find values that are precise enough to avoid unintended matches. Searching for `fill="#000000"` is safer than searching for `fill=`, which could alter many unrelated elements.
+  </Accordion>
+
+  <Accordion title="Comment out instead of delete">
+    Prefix a row with `#` in column A to disable it temporarily. This preserves the rule for later use and makes troubleshooting much easier than deleting and recreating rows.
+  </Accordion>
+
+  <Accordion title="Order matters">
+    The worksheet is processed from top to bottom. Place general rules before specific overrides, or reverse the order if you need specific rules to set the stage for broader ones.
+  </Accordion>
+
+  <Accordion title="Test one rule at a time">
+    Add or modify one find-and-replace pair, publish a single SVG, and check the result in a browser before adding more rules. Multiple simultaneous changes are harder to debug.
+  </Accordion>
+
+  <Accordion title="Use unique prefixes for custom attributes">
+    If you add custom CSS classes, IDs, or data attributes, prefix them with something distinctive—for example, `rv-animate-` or `rv-zoom-`—to avoid collisions with Graphviz-generated names.
+  </Accordion>
+
+  <Accordion title="Validate the final SVG">
+    After post-processing, open the SVG in a browser to confirm the XML remains well-formed and that the intended visual changes appear correctly.
+  </Accordion>
+</AccordionGroup>

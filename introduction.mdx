@@ -1,0 +1,61 @@
+---
+title: "Excel to Graphviz: Relationship Visualizer Overview"
+description: "Turn Excel rows into professional Graphviz diagrams — org charts, dependency trees, network maps, and more. Free, cross-platform, no coding required."
+---
+
+The **Relationship Visualizer** is a free, macro-enabled Excel workbook that transforms tabular spreadsheet data into professional Graphviz diagrams. You enter nodes and relationships directly into Excel cells, and the tool generates DOT code and renders the graph — no programming knowledge required. It runs on both Microsoft Windows and Apple macOS, and supports a wide variety of diagram types and layout engines.
+
+## What you can build
+
+The Relationship Visualizer is well suited to any domain where relationships between things need to be visualized. Common use cases include:
+
+- **Org charts** — hierarchical reporting structures from HR data
+- **Dependency trees** — software packages, build pipelines, project tasks
+- **Network maps** — infrastructure, system topology, interconnected services
+- **Process flows** — workflows, state machines, decision trees
+- **Timeline diagrams** — event sequences, version histories, evolutionary relationships
+- **Cluster layouts** — Kanban boards, categorized groupings, geographic regions
+
+## Key feature areas
+
+<CardGroup cols={2}>
+  <Card title="Data worksheet" icon="table" href="/concepts/data-worksheet">
+    Enter nodes and edges in plain Excel rows. Columns like **Item**, **Related Item**, **Label**, and **Style Name** control what gets drawn and how.
+  </Card>
+  <Card title="Style designer" icon="palette" href="/guides/style-designer">
+    Compose Graphviz format strings visually — pick shapes, colors, fonts, and arrowheads — then save and reuse them as named styles across your data.
+  </Card>
+  <Card title="SQL data import" icon="database" href="/sql/overview">
+    Write SQL queries to pull and transform data from other Excel workbooks or Access databases, then pipe it straight into the graph (Windows only).
+  </Card>
+  <Card title="Publishing and export" icon="file-export" href="/publishing/publish-graphs">
+    Export diagrams as SVG, PNG, PDF, and more. Post-process SVG output to add hover tooltips and JavaScript animations.
+  </Card>
+</CardGroup>
+
+## Layout engines
+
+The **Graphviz** tab in the Excel ribbon lets you switch between eight layout engines with a single click:
+
+| Engine | Best for |
+|---|---|
+| `dot` | Hierarchical diagrams — org charts, trees, dependencies |
+| `neato` | Undirected spring-model graphs — network maps |
+| `fdp` | Force-directed layouts — large undirected networks |
+| `sfdp` | Scaled force-directed — very large graphs |
+| `circo` | Circular layouts — ring topologies |
+| `twopi` | Radial layouts — hub-and-spoke diagrams |
+| `osage` | Array/cluster layouts — Kanban boards, grids |
+| `patchwork` | Squarified treemaps — proportional area diagrams |
+
+## How it works
+
+The Relationship Visualizer reads your Excel data, generates Graphviz DOT code, calls the `dot` command-line tool, and renders the result as a graph image directly inside the workbook. You can view the generated DOT source on the `source` worksheet at any time, which makes the tool equally useful for learning the DOT language.
+
+## Multilingual ribbon
+
+The Ribbon interface ships in English (US/UK), French, German, Italian, and Polish. All translations are stored in editable worksheets, so you can correct or extend them without touching any code.
+
+<Note>
+The Relationship Visualizer runs on both **Microsoft Windows** and **Apple macOS**. SQL queries and Clipboard features are available on Windows only. Core diagramming — entering data, applying styles, rendering graphs, and exporting files — works fully on both platforms. See the [Windows installation guide](/installation/windows) or [macOS installation guide](/installation/macos) for platform-specific setup steps.
+</Note>

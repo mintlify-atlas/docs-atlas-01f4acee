@@ -1,0 +1,277 @@
+---
+title: "Recursive tree queries and iterative SQL in Graphviz"
+description: "Walk parent-child hierarchies with recursive tree queries and loop SQL patterns over result sets with iteration to build org charts, timelines, and more."
+---
+
+Two advanced SQL patterns let you work with data whose structure is not flat. **Recursion** walks parent-child relationships — like an org chart or a routing network — expanding the hierarchy level by level until no further connections exist. **Iteration** loops over a result set and runs a follow-up query once for each row, enabling you to generate one graph element per unique value without duplicating SQL.
+
+<Warning>
+  Recursive and iterative queries are part of the SQL feature, which is **Windows only**. ADO, which powers this feature, is not available on macOS.
+</Warning>
+
+## Recursive tree queries
+
+A recursive query traverses hierarchical data by repeatedly following parent-child relationships starting from a known anchor node. The Relationship Visualizer handles the recursion internally — you write a single SQL statement that describes the traversal, and the engine walks the tree for you.
+
+### When to use recursion
+
+Recursion is the right tool when:
+
+- Your data has parent and child columns and you want to graph the full hierarchy (org charts, dependency trees, subway routes).
+- You want to show only the branches that flow **from** a specific node — a forward search.
+- You want to show only the branches that converge **onto** a specific node — a backward search.
+- You need to limit depth — for example, show only the first two levels of an org chart.
+
+### The four recursive keywords
+
+Relationship Visualizer defines four reserved column aliases for recursive queries:
+
+| Alias | Purpose |
+|-------|---------|
+| `[TREE QUERY]` | The SQL to execute recursively. Must contain `''{WHERE VALUE}''` as a placeholder for the current node's value. |
+| `[WHERE VALUE]` | The starting anchor value — for example, the ID of the root node or CEO. |
+| `[WHERE COLUMN]` | The column name that identifies the next node to recurse into. |
+| `[MAX DEPTH]` | Optional integer. Limits how many levels deep the traversal goes. Omit for unlimited depth. |
+
+Because `[TREE QUERY]` is passed as a string literal, any string values inside the inner SQL must be escaped with doubled single quotes. For example, `'some value'` inside the tree query becomes `''some value''`.
+
+### Use case 1: graph everything
+
+The simplest form is a plain query with no recursion — it graphs all rows:
+
+```sql
+SELECT [From Node] AS [Item],
+       [To Node]   AS [Related Item]
+FROM   [Routes$]
+```
+
+This produces the complete graph but cannot extract a subset.
+
+### Use case 2: forward search from a node
+
+A forward tree query starts at a named node and follows all branches that flow outward from it. The query below starts at node `A0` and shows every node reachable from it:
+
+```sql
+SELECT
+  'SELECT [To Node], [From Node] AS [ITEM], [To Node] AS [RELATED ITEM]
+     FROM [Routes$] WHERE [From Node] = ''{WHERE VALUE}'''
+              AS [TREE QUERY],
+  'A0'       AS [WHERE VALUE],
+  'To Node'  AS [WHERE COLUMN]
+```
+
+The inner query runs once for the anchor value `A0`, then again for each new node discovered, continuing until no new nodes are found.
+
+### Use case 3: forward search with depth limit
+
+Adding `[MAX DEPTH]` stops the traversal after a fixed number of levels. This is useful for org charts where you only want to show direct reports and their subordinates:
+
+```sql
+SELECT
+  'SELECT [To Node], [From Node] AS [ITEM], [To Node] AS [RELATED ITEM]
+     FROM [Routes$] WHERE [From Node] = ''{WHERE VALUE}'''
+              AS [TREE QUERY],
+  'A0'       AS [WHERE VALUE],
+  'To Node'  AS [WHERE COLUMN],
+  3          AS [MAX DEPTH]
+```
+
+The graph shows the anchor node plus up to three levels of branches.
+
+### Use case 4: backward search from a node
+
+Swap the `WHERE` direction to show all branches that converge on a target node. Change `[WHERE COLUMN]` to the parent column and filter on the child column:
+
+```sql
+SELECT
+  'SELECT [From Node], [From Node] AS [ITEM], [To Node] AS [RELATED ITEM]
+     FROM [Routes$] WHERE [To Node] = ''{WHERE VALUE}'''
+              AS [TREE QUERY],
+  'A9'        AS [WHERE VALUE],
+  'From Node' AS [WHERE COLUMN]
+```
+
+This traces every path that leads to node `A9`.
+
+### Use case 5: backward search with depth limit
+
+Combine the backward direction with `[MAX DEPTH]` to show only the nodes that are within a given number of hops of the target:
+
+```sql
+SELECT
+  'SELECT [From Node], [From Node] AS [ITEM], [To Node] AS [RELATED ITEM]
+     FROM [Routes$] WHERE [To Node] = ''{WHERE VALUE}'''
+              AS [TREE QUERY],
+  'A9'        AS [WHERE VALUE],
+  'From Node' AS [WHERE COLUMN],
+  3           AS [MAX DEPTH]
+```
+
+### Use case 6: combining queries to highlight paths
+
+You can layer multiple tree queries to highlight different paths in the same graph. Run a plain query first to draw the whole graph, then run directed tree queries with custom `[Attributes]` to color specific paths:
+
+```sql
+-- Step 1 — Get all routes
+SELECT [From Node] AS [Item], [To Node] AS [Related Item]
+FROM   [Routes$]
+
+-- Step 2 — Highlight 3 levels converging on A9 in blue
+SELECT
+  'SELECT [From Node], [From Node] AS [ITEM], [To Node] AS [RELATED ITEM],
+     ''color=blue'' AS [Attributes]
+     FROM [Routes$] WHERE [To Node] = ''{WHERE VALUE}'''
+              AS [TREE QUERY],
+  'A9'        AS [WHERE VALUE],
+  'From Node' AS [WHERE COLUMN],
+  3           AS [MAX DEPTH]
+
+-- Step 3 — Highlight 3 levels branching from A9 in red
+SELECT
+  'SELECT [To Node], [From Node] AS [ITEM], [To Node] AS [RELATED ITEM],
+     ''color=red'' AS [Attributes]
+     FROM [Routes$] WHERE [From Node] = ''{WHERE VALUE}'''
+              AS [TREE QUERY],
+  'A9'        AS [WHERE VALUE],
+  'To Node'   AS [WHERE COLUMN],
+  3           AS [MAX DEPTH]
+```
+
+Enable **Strict** mode on the **Graphviz** ribbon tab to prevent duplicate edges when combining overlapping queries.
+
+## Org charts with recursive queries
+
+Organization charts are a natural fit for recursive tree queries. Given a worksheet with **Name**, **Title**, **Department**, and **Reports To** columns, you can extract any subtree of the hierarchy by changing `[WHERE VALUE]` and `[MAX DEPTH]`.
+
+The edge query traverses the tree to produce parent-child relationships:
+
+```sql
+SELECT
+  'SELECT [ID], [Reports To ID] AS [ITEM], [ID] AS [RELATED ITEM],
+          [Department] AS [CLUSTER], ''Border 2'' AS [CLUSTER STYLE NAME]
+     FROM [US Executive Branch$] WHERE [Reports To ID] = ''{WHERE VALUE}'''
+       AS [TREE QUERY],
+  '1'  AS [WHERE VALUE],
+  'ID' AS [WHERE COLUMN],
+  1    AS [MAX DEPTH]
+```
+
+The node query runs a second traversal to output styled node labels. Both queries are placed on separate rows of the **sql** worksheet and run in sequence. Together they produce a fully styled org chart.
+
+<Tip>
+  The org chart sample is in `samples/13 - Using SQL - Organization Charts` in the Relationship Visualizer zip file. The routing tree sample is in `samples/12 - Using SQL - Trees`.
+</Tip>
+
+## Iterative queries
+
+**Iteration** runs a follow-up SQL query once for each row produced by an initial query. This is different from recursion: iteration does not follow parent-child relationships — it steps through a flat list of values and executes a second query for each one.
+
+### The ITERATE keyword
+
+Add `TRUE AS [ITERATE]` to a query to mark it as iterative. Supply the two queries using:
+
+- `[SQL FOR ID]` — the query that produces the list of IDs to iterate over.
+- `[SQL FOR DATA]` — the query that runs once per ID. Use `{ID}` as a placeholder where the current ID should be substituted.
+
+```sql
+SELECT
+  'SELECT DISTINCT [Year] AS [ID] FROM [shells$]'                                              AS [SQL FOR ID],
+  'SELECT [Shell] AS [ITEM], TRUE AS [CREATE RANK], ''same'' AS [RANK]
+   FROM [shells$] WHERE [YEAR] = ''{ID}'' '                                                    AS [SQL FOR DATA],
+  TRUE                                                                                         AS [ITERATE]
+```
+
+The engine runs the `[SQL FOR ID]` query first to get the list of years. Then, for each year value, it substitutes that year into `{ID}` in the `[SQL FOR DATA]` query and runs it. The results are accumulated on the **data** worksheet.
+
+### Iterating with UNION
+
+Use `UNION` inside `[SQL FOR DATA]` to include multiple types of rows in each iteration. For example, to include the year node alongside the shells in each ranked subgroup:
+
+```sql
+SELECT
+  'SELECT DISTINCT [Year] AS [ID] FROM [shells$]' AS [SQL FOR ID],
+  'SELECT [Year]  AS [ITEM], TRUE AS [CREATE RANK], ''same'' AS [RANK]
+     FROM [shells$] WHERE [YEAR] = ''{ID}''
+       UNION
+   SELECT [Shell] AS [ITEM], TRUE AS [CREATE RANK], ''same'' AS [RANK]
+     FROM [shells$] WHERE [YEAR] = ''{ID}'' '     AS [SQL FOR DATA],
+  TRUE                                            AS [ITERATE]
+```
+
+### Combining iteration with CREATE EDGES for timelines
+
+A common pattern pairs iteration (to build year-aligned subgroups) with `CREATE EDGES` (to build the timeline backbone). The full Unix shell evolution example in the source material uses this combination:
+
+<Steps>
+  <Step title="Build ranked subgroups by year">
+    Use `ITERATE` with `[SQL FOR ID]` and `[SQL FOR DATA]` to create one `{rank=same; ...}` subgraph per year, ensuring that all shells introduced in the same year appear on the same rank.
+  </Step>
+
+  <Step title="Create the timeline backbone">
+    Use `SELECT DISTINCT … CREATE EDGES` to chain year nodes together in order, forming the left-to-right timeline structure.
+
+    ```sql
+    SELECT DISTINCT [Year] AS [Item],
+                    TRUE   AS [CREATE EDGES]
+    FROM   [Shells$]
+    WHERE  [Year] IS NOT NULL
+    ORDER BY [Year] ASC
+    ```
+  </Step>
+
+  <Step title="Add shell evolution edges">
+    A plain query reads the `evolution` worksheet to draw edges between shells that influenced one another.
+
+    ```sql
+    SELECT [From Shell] AS [Item],
+           [To Shell]   AS [Related Item]
+    FROM   [evolution$]
+    ```
+  </Step>
+
+  <Step title="Apply styles">
+    Style queries set distinct shapes and colors for year nodes, shell nodes, and evolution edges.
+  </Step>
+</Steps>
+
+## Iterate vs. enumerate
+
+<AccordionGroup>
+  <Accordion title="Iteration — stepping through existing data">
+    Iteration loops over values that already exist in your data. Each value in the ID list becomes a substitution into the follow-up query. Use iteration when the set of values is determined by what is in your worksheet.
+  </Accordion>
+
+  <Accordion title="Enumeration — generating a numeric sequence">
+    Enumeration generates a synthetic sequence of numbers from a start value to a stop value with a configurable step. Use `TRUE AS [ENUMERATE]` with `[START AT]`, `[STOP AT]`, and `[STEP BY]` columns. The placeholder `{step}` is substituted with each generated number.
+
+    ```sql
+    SELECT TRUE                   AS [ENUMERATE],
+           MIN(CLng([StartYear])) AS [START AT],
+           MAX(CLng([EndYear]))   AS [STOP AT],
+           1                      AS [STEP BY],
+           '{step}'               AS [Item],
+           'Year'                 AS [Style Name]
+    FROM   [timeline$]
+    WHERE  IsNumeric([StartYear])
+    ```
+
+    Use enumeration for timelines where you need every year shown even if no events fall in that year, or for any sequence that requires generated values rather than values from data.
+  </Accordion>
+</AccordionGroup>
+
+## Real-world use cases
+
+<CardGroup cols={2}>
+  <Card title="Organization charts" icon="sitemap" href="/sql/recursion-and-iteration#org-charts-with-recursive-queries">
+    Use tree queries with `[MAX DEPTH]` to extract any subtree of a reporting hierarchy. Change `[WHERE VALUE]` to focus on a different department head.
+  </Card>
+  <Card title="Routing and dependency trees" icon="code-branch">
+    Forward and backward tree searches let you trace paths through a network — which nodes can be reached from a starting point, or which predecessors lead to a target.
+  </Card>
+  <Card title="Timeline diagrams" icon="calendar">
+    Combine `ITERATE` (for year subgroups) and `ENUMERATE` (for the continuous year backbone) to build roadmap timelines that handle sparse event data cleanly.
+  </Card>
+  <Card title="Unix shell evolution" icon="terminal">
+    The `samples/16 - Using SQL - Iteration` sample builds a complete shell evolution diagram using iteration, `CREATE EDGES`, and `UNION` across multiple worksheets.
+  </Card>
+</CardGroup>

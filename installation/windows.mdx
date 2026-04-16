@@ -1,0 +1,132 @@
+---
+title: "Install the Relationship Visualizer on Microsoft Windows"
+description: "Install Graphviz, download the Relationship Visualizer ZIP from SourceForge, unblock the file, enable macros, and verify your setup on Microsoft Windows."
+---
+
+Setting up the Relationship Visualizer on Windows involves two main steps: installing the Graphviz rendering engine and configuring the Excel workbook. Graphviz must be installed first because the workbook calls the `dot` command-line tool to generate graph images. Follow each step in order to ensure everything works correctly.
+
+<Steps>
+  <Step title="Download and install Graphviz">
+    Go to the [Graphviz download page](https://graphviz.org/download/) and download the Windows installer. You will see two options — choose the one that matches your machine:
+
+    - **64-bit (x64)** — use this for most modern Windows machines
+    - **32-bit (Win32)** — use this only if your Windows installation is 32-bit
+
+    Run the downloaded `.exe` installer. When the installer reaches the **PATH** step, select **Add Graphviz to the system PATH for all users** and click **Next**. This ensures the `dot` command is accessible from anywhere on your system.
+
+    Complete the installer by clicking through the remaining screens and pressing **Install**, then **Finish**.
+
+    <Tip>
+    If Microsoft Edge blocks the download, this is usually because a new Graphviz release has not yet accumulated enough download history for Microsoft's reputation system. In Edge, click the download item, choose **Keep**, then confirm you want to keep the file.
+    </Tip>
+  </Step>
+
+  <Step title="Verify the installation and register Graphviz plugins">
+    Open **Command Prompt** as Administrator: click the Windows Start Menu, type `Command Prompt`, and choose **Run as administrator** from the right-hand panel. Confirm the UAC prompt by clicking **Yes**.
+
+    Confirm the window title shows **Administrator** before proceeding.
+
+    First, verify that Graphviz is installed and on the PATH by running:
+
+    ```bat
+    dot -V
+    ```
+
+    Note the `-V` flag is uppercase. You should see output like:
+
+    ```
+    dot - graphviz version 12.2.1 (20241206.2353)
+    ```
+
+    If you see `'dot' is not recognized as an internal or external command`, check that:
+    - You selected **Add Graphviz to the system PATH** during installation.
+    - You opened a **new** Command Prompt window after installation (old windows retain the old PATH).
+    - The Graphviz `bin` directory (e.g., `C:\Program Files\Graphviz\bin`) appears in your `PATH` environment variable.
+
+    Then register the Graphviz plugins by running:
+
+    ```bat
+    dot -c
+    ```
+
+    No output is displayed — this is expected. The command silently registers all rendering plugins.
+
+    <Warning>
+    Do not skip the `dot -c` step. The Relationship Visualizer uses Graphviz plugins to render graphs. If you skip plugin registration, graphs may fail to render even when `dot` is installed correctly.
+    </Warning>
+  </Step>
+
+  <Step title="Download the Relationship Visualizer">
+    Download `RelationshipVisualizer.zip` from [SourceForge](https://sourceforge.net/projects/relationship-visualizer/files/latest/download) by clicking the large green **Download** button. SourceForge hosts the official distribution and provides virus scanning and checksums.
+
+    To verify the download, compare the SHA1 or MD5 checksum listed on the [SourceForge files page](https://sourceforge.net/projects/relationship-visualizer/files/) against the file you downloaded.
+
+    Extract all files from the ZIP to a local folder of your choice. The archive contains:
+    - `Relationship Visualizer.xlsm` — the main workbook
+    - `samples/` — example workbooks
+    - License files
+  </Step>
+
+  <Step title="Unblock the spreadsheet file">
+    Windows marks files downloaded from the internet as potentially unsafe. You must remove this block before opening the workbook, or Excel will open it in Protected View and macros will not load.
+
+    In Windows Explorer, navigate to the folder where you extracted the ZIP. Right-click `Relationship Visualizer.xlsm` and select **Properties** (or press `Alt+Enter`).
+
+    On the **General** tab, look for an **Unblock** checkbox near the bottom of the dialog. If it is present, check it, click **Apply**, then click **OK**.
+
+    <Tip>
+    If the **Unblock** checkbox is not visible, the file has already been unblocked automatically or was not flagged by Windows — you can proceed without this step.
+    </Tip>
+
+    If Excel opens the workbook in Protected View regardless (yellow bar at the top), click **Enable Editing** and then **Enable Content** when prompted.
+  </Step>
+
+  <Step title="Enable macros in Excel">
+    The Relationship Visualizer is a VBA-enabled workbook. Excel must be configured to allow macros to run.
+
+    From the Excel **File** menu, select **Options** (bottom of the left panel). In the **Excel Options** dialog, select **Trust Center** from the left column, then click **Trust Center Settings...**.
+
+    Under the Trust Center categories on the left, select **Macro Settings**. Choose **Enable VBA macros (not recommended; potentially dangerous code can run)**, then click **OK** to close both dialogs.
+
+    <Warning>
+    Enable macros only for workbooks from sources you trust. The Relationship Visualizer is published under the MIT license and distributed exclusively through SourceForge. Do not enable macros on workbooks from unknown sources.
+    </Warning>
+  </Step>
+
+  <Step title="Open the workbook and save as a template">
+    Double-click `Relationship Visualizer.xlsm` to open it in Excel. If a security bar appears saying `SECURITY WARNING Macros have been disabled`, click **Enable Content**.
+
+    Once the workbook is open and macros are running, you will see the **Graphviz** and **Launchpad** tabs in the Excel ribbon.
+
+    To make it easy to start new diagrams in the future, save the workbook as a template:
+
+    1. Go to **File** → **Save As**.
+    2. Change the file type from `Excel Macro-Enabled Workbook (*.xlsm)` to `Excel Macro-Enabled Template (*.xltm)`.
+    3. Excel automatically saves the template to your Custom Office Templates folder.
+
+    From now on, you can create a fresh Relationship Visualizer workbook at any time by selecting it from **File** → **New** under your personal templates.
+  </Step>
+</Steps>
+
+## Verify your setup
+
+Open the workbook, navigate to the **data** worksheet, and enter `a` in the **Item** column and `b` in the **Related Item** column of the first row. Click the **Graphviz** tab in the ribbon and ensure the **Automatic** toggle is on. A graph with a single arrow from `a` to `b` should appear immediately.
+
+If no graph appears, open the `console` worksheet to review any error messages from the `dot` command.
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Learn how to enter data, enable automatic rendering, and render your first graph.
+  </Card>
+  <Card title="Data worksheet" icon="table" href="/concepts/data-worksheet">
+    Understand all available columns and how they control graph output.
+  </Card>
+  <Card title="SQL data import" icon="database" href="/sql/overview">
+    Use SQL queries to pull data from other workbooks or Access databases (Windows only).
+  </Card>
+  <Card title="Style designer" icon="palette" href="/guides/style-designer">
+    Build reusable styles for nodes, edges, and clusters.
+  </Card>
+</CardGroup>

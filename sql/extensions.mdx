@@ -1,0 +1,225 @@
+---
+title: "SQL extensions: clusters, label splitting, and edge chaining"
+description: "Activate cluster grouping, label splitting, node chaining, and ranked subgraphs by adding reserved column aliases to your SQL SELECT statements."
+---
+
+The Relationship Visualizer recognizes a set of reserved column names in SQL result sets that activate special graph-building behaviors. You include these names as aliases in your `SELECT` statement — no stored procedures, no macros, just SQL column naming conventions. Each extension handles a task that would otherwise require many manual rows on the **data** worksheet.
+
+<Warning>
+  SQL extensions are part of the SQL feature, which is **Windows only**. The ADO engine required for SQL queries is not available on macOS.
+</Warning>
+
+## Grouping data into clusters and subclusters
+
+The `CLUSTER` column triggers automatic cluster (subgraph) generation. Every unique value in the `CLUSTER` column becomes a cluster boundary in the graph. Items sharing the same cluster value are grouped inside that cluster.
+
+```sql
+SELECT [Continent] AS [CLUSTER],
+       [ISO]       AS [Item],
+       [Country]   AS [Label]
+FROM   [countries$]
+```
+
+### Multi-level clustering
+
+For hierarchical groupings, use numbered cluster columns: `CLUSTER1`, `CLUSTER2`, up to `CLUSTERn`. The Relationship Visualizer nests each level inside the one above.
+
+```sql
+SELECT [continent] AS [CLUSTER1],
+       [country]   AS [CLUSTER2],
+       [city]      AS [Item]
+FROM   [Cities$]
+```
+
+This produces continent clusters containing country subclusters, each containing city nodes.
+
+### Cluster label, style, attributes, and tooltip
+
+Each cluster level supports four optional companion columns that control its appearance. The column names follow the pattern `CLUSTER LABEL`, `CLUSTER STYLE NAME`, `CLUSTER ATTRIBUTES`, and `CLUSTER TOOLTIP` (and the same with `CLUSTER1`, `CLUSTER2`, and so on for numbered levels).
+
+| Column | Purpose |
+|--------|---------|
+| `CLUSTER LABEL` | Override the default label derived from the cluster column value. Omit to use the value itself. |
+| `CLUSTER STYLE NAME` | Name of a style on the **styles** worksheet to apply to the cluster border. |
+| `CLUSTER ATTRIBUTES` | Raw Graphviz attribute string added to the cluster subgraph. |
+| `CLUSTER TOOLTIP` | Hover text shown in SVG output. |
+
+```sql
+SELECT [Department]   AS [CLUSTER],
+       'Border 2'     AS [CLUSTER STYLE NAME],
+       [Reports To]   AS [Item],
+       [ID]           AS [Related Item]
+FROM   [US Executive Branch$]
+```
+
+The `{label}` placeholder in a cluster label is substituted with the cluster's grouping value at runtime. For example, `'Region: {label}'` renders as `'Region: Europe'` for the Europe cluster.
+
+### Subcluster columns
+
+To add a second grouping level inside a cluster, use `SUBCLUSTER` alongside `CLUSTER`. All the same companion columns apply (`SUBCLUSTER LABEL`, `SUBCLUSTER STYLE NAME`, `SUBCLUSTER ATTRIBUTES`, `SUBCLUSTER TOOLTIP`).
+
+<Note>
+  Column name matching is case-insensitive. `CLUSTER`, `Cluster`, and `cluster` are all treated identically.
+</Note>
+
+## Splitting long labels
+
+Node labels that are too long stretch the node width and make graphs harder to read. The **label split** extension breaks long labels into multiple lines at the nearest word boundary.
+
+Add two columns to your query:
+
+| Column | Purpose |
+|--------|---------|
+| `SPLIT LENGTH` | Maximum characters per line (splits at the nearest space at or after this position) |
+| `LINE ENDING` | The string inserted at each break point |
+
+```sql
+SELECT [Name]  AS [Item],
+       [Title] AS [Label],
+       '25'    AS [SPLIT LENGTH],
+       '\n'    AS [LINE ENDING],
+       'Node'  AS [Style Name]
+FROM   [employees$]
+```
+
+Common line endings:
+
+| Value | Effect |
+|-------|--------|
+| `\n` | New line, center-aligned (default when `SPLIT LENGTH` is set but `LINE ENDING` is omitted) |
+| `\r` | New line, right-aligned |
+| `\l` | New line, left-aligned |
+| `<BR/>` | HTML line break (for HTML-like labels) |
+| `\|` | Pipe delimiter (for Graphviz `record` shapes) |
+
+For HTML-like labels, use `<BR/>` as the line ending and wrap the full label in angle brackets:
+
+```sql
+SELECT [ID]                                              AS [Item],
+       '<<b>' & [Name] & '</b><br/><br/>' & [Title] & '>' AS [Label],
+       '25'                                              AS [SPLIT LENGTH],
+       '<BR/>'                                           AS [LINE ENDING],
+       'Department'                                      AS [Style Name]
+FROM   [US Executive Branch$]
+```
+
+## Chaining nodes using edges (CREATE EDGES)
+
+`CREATE EDGES` automatically generates edges between consecutive items in the result set. If your query returns `A`, `B`, `C`, `D` in that order, the extension creates `A → B`, `B → C`, and `C → D` without you writing any relationship rows.
+
+```sql
+SELECT DISTINCT [Year]  AS [Item],
+                TRUE    AS [CREATE EDGES]
+FROM   [shells$]
+WHERE  [Year] IS NOT NULL
+ORDER BY [Year] ASC
+```
+
+This pattern is ideal for timelines, version progressions, pipelines, and any sequence where the order of items defines the edges.
+
+## Creating ranked subgraphs (CREATE RANK)
+
+`CREATE RANK` groups items into a Graphviz `{rank=...}` subgraph, forcing those nodes to appear on the same visual rank (horizontal or vertical line, depending on `rankdir`).
+
+```sql
+SELECT [Shell]  AS [Item],
+       TRUE     AS [CREATE RANK],
+       'same'   AS [RANK]
+FROM   [shells$]
+WHERE  [Year] = '1988'
+```
+
+Valid `RANK` values are `same`, `min`, `source`, `max`, and `sink` (all lowercase; Graphviz treats these as case-sensitive).
+
+Combine `CREATE RANK` with `ITERATE` to generate one subgroup per unique year without hard-coding values — see [Recursive and iterative SQL query patterns](/sql/recursion-and-iteration) for a full walkthrough.
+
+## Directives
+
+Directives are special non-SQL statements you enter in column B of the **sql** worksheet. They look like SQL but control the behavior of the batch pipeline rather than querying data.
+
+<AccordionGroup>
+  <Accordion title="RESET">
+    Clears all results from the **data** worksheet before the next query writes to it.
+
+    ```
+    RESET
+    ```
+  </Accordion>
+
+  <Accordion title="SET DATA FILE">
+    Sets the default workbook for all subsequent SQL statements. The filename or path goes in column C of the same row.
+
+    ```
+    SET DATA FILE
+    ```
+  </Accordion>
+
+  <Accordion title="SET PLACEHOLDER">
+    Defines a named placeholder that can be substituted into subsequent SQL statements. Wrap the placeholder name in braces inside the SQL.
+
+    ```
+    SET PLACEHOLDER subway_line = Metropolitan
+    ```
+
+    Then use it in a query:
+
+    ```sql
+    SELECT [station_from]       AS [Item],
+           [station_to]         AS [Related Item],
+           '{subway_line} Line' AS [Label]
+    FROM   [london_underground$]
+    WHERE  [tube_route] = '{subway_line}'
+    ```
+
+    Placeholders make it easy to parameterize queries — change the placeholder value once and all queries that reference it update automatically.
+  </Accordion>
+
+  <Accordion title="PREVIEW and PUBLISH">
+    Trigger graph rendering directly from the SQL pipeline, without clicking the **Visualize** or **Publish** buttons manually.
+
+    ```
+    PREVIEW
+    PREVIEW AS DIRECTED GRAPH
+    PREVIEW AS UNDIRECTED GRAPH
+    PUBLISH
+    PUBLISH AS DIRECTED GRAPH
+    PUBLISH ALL VIEWS
+    PUBLISH ALL VIEWS AS DIRECTED GRAPH foobar
+    ```
+
+    Append a file name prefix after `PUBLISH` variants to control the output filename.
+  </Accordion>
+
+  <Accordion title="Logging">
+    Write error and environment information to `Relationship Visualizer ADO Log.txt` for debugging.
+
+    ```
+    ENABLE LOGGING
+    DISABLE LOGGING
+    LOG ENVIRONMENT
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Extensions at a glance
+
+<CardGroup cols={2}>
+  <Card title="CLUSTER / CLUSTER1…CLUSTERn" icon="layer-group">
+    Group items into one or more nested cluster levels automatically.
+  </Card>
+  <Card title="SPLIT LENGTH + LINE ENDING" icon="text-width">
+    Break long label text at word boundaries for cleaner node sizing.
+  </Card>
+  <Card title="CREATE EDGES" icon="arrow-right-arrow-left">
+    Generate a chain of edges from an ordered list of items.
+  </Card>
+  <Card title="CREATE RANK" icon="table-rows">
+    Force a set of nodes onto the same visual rank in the layout.
+  </Card>
+  <Card title="SET PLACEHOLDER" icon="brackets-curly">
+    Define reusable named values to parameterize SQL without editing each query.
+  </Card>
+  <Card title="SET DATA FILE" icon="file-import">
+    Switch the default data source for all subsequent queries.
+  </Card>
+</CardGroup>

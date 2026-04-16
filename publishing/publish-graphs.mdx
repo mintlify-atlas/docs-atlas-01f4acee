@@ -1,0 +1,78 @@
+---
+title: "Publish Graphviz diagrams as PNG, PDF, SVG, or more"
+description: "Export graphs from the Graphviz ribbon tab to external files in formats including PNG, PDF, SVG, and more for sharing or archiving."
+---
+
+Publishing a graph sends it directly to a file on disk instead of rendering it inside the Excel workbook. This is the most practical way to work with large diagrams—ones that extend well beyond what a spreadsheet grid can comfortably display. Published files can be archived as snapshots of your data at a point in time, shared with colleagues who do not use Excel, or opened in a dedicated viewer for zooming, printing, and annotation.
+
+<Tip>
+Use **Publish** when you need to work with the graph outside of Excel—whether to archive versions, share the diagram with others, or explore the layout at a scale Excel cannot comfortably display. Publishing is also ideal when you are comparing multiple layout engines or spline settings, since each exported file can serve as a snapshot of your experiments. If you plan to print the diagram or examine fine details, publishing to a PDF or SVG and opening it in a dedicated viewer will give you far more flexibility than the in-workbook preview.
+</Tip>
+
+## Supported output formats
+
+The **File Format** dropdown on the **Graphviz** ribbon tab exposes the most commonly used Graphviz output formats:
+
+<CardGroup cols={3}>
+  <Card title="bmp" icon="image">Bitmap image</Card>
+  <Card title="gif" icon="image">Graphics Interchange Format</Card>
+  <Card title="jpg" icon="image">JPEG image</Card>
+  <Card title="pdf" icon="file">Portable Document Format</Card>
+  <Card title="png" icon="image">Portable Network Graphics</Card>
+  <Card title="ps" icon="file">PostScript</Card>
+  <Card title="svg" icon="code">Scalable Vector Graphics</Card>
+  <Card title="tiff" icon="image">Tagged Image File Format</Card>
+  <Card title="json" icon="braces">Graphviz JSON graph</Card>
+  <Card title="dot" icon="braces">DOT source code</Card>
+</CardGroup>
+
+For detailed review or poster-scale printing, **PDF** and **SVG** work especially well with dedicated viewers like Adobe Acrobat Reader, which support smooth zoom and multi-sheet printing.
+
+## Publishing workflow
+
+<Steps>
+  <Step title="Choose an output directory">
+    Select the **Get Directory** button in the **Publish** group on the **Graphviz** ribbon tab. A directory-picking dialog opens. Choose a folder, then press **OK**. The chosen path replaces the button label so you always know where files will be written.
+  </Step>
+
+  <Step title="Set a filename prefix">
+    Type a prefix in the edit field below the directory path. This prefix is the start of every filename the tool generates—for example, `Graph - `. The active view name is automatically appended to the prefix so you can tell files apart.
+  </Step>
+
+  <Step title="Select a file format">
+    Open the **File Format** dropdown and choose the format you want—`png`, `pdf`, `svg`, and so on. The extension you select determines the output type Graphviz produces.
+  </Step>
+
+  <Step title="Configure optional filename extras">
+    A secondary dropdown lets you append a timestamp and the active graph options (layout engine and spline setting) to the filename.
+
+    - **Timestamp** — guarantees a unique filename on each publish run. This prevents conflicts when the file is already open in another application, such as Acrobat Reader, which locks the file and prevents Graphviz from overwriting it.
+    - **Graph options** — records which layout engine and spline combination produced the file, making it easy to compare experiments later.
+  </Step>
+
+  <Step title="Choose a view">
+    Select the view you want to publish from the **View** dropdown on the **Graphviz** tab worksheet. The view controls which style switches are active in the diagram.
+  </Step>
+
+  <Step title="Publish the graph">
+    Click **Publish**. The graph is generated using the same process as **Refresh**, but the output goes directly to disk rather than into the workbook. A status message in the Excel status bar confirms the filename and folder when the file is written.
+
+    <Info>
+      Each view in the workbook corresponds to a column of yes/no style switches. When you publish, the active view determines which styles appear in the exported diagram. The view name is included in the output filename.
+    </Info>
+  </Step>
+</Steps>
+
+## Publishing all views at once
+
+Click **Publish all views** to export every named view as a separate file in one operation. The tool cycles through each view automatically, applying its style switches and appending the view name to the filename prefix. This is useful for generating a complete set of diagram variants—for example, one file per audience or one file per layout engine—without clicking **Publish** repeatedly.
+
+<Note>
+The **Publish all views** button iterates every view defined in the **styles** worksheet. Each exported file is named with the shared prefix followed by its view name, so the files sort and group naturally in your file system.
+</Note>
+
+## Viewing published files
+
+After publishing, open your file manager and navigate to the output directory. The filename combines the prefix, the view name, and the extension you selected—for example, `Graph - All Styles.png`.
+
+Open the file with the application associated with its type. For image formats, your operating system's built-in image viewer opens automatically and gives you access to all of its zoom, print, and annotation features. For PDF output, a viewer such as Adobe Acrobat Reader provides poster-printing capabilities that let you span the diagram across multiple sheets of paper.
